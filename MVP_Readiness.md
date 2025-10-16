@@ -1,6 +1,6 @@
 ## Paystreet Migration, Admin Dashboard, Frontend
 
-**Overall MVP Readiness: 70%**
+**Overall Readiness: 70%**
 
 This document summarizes what’s production-ready and what remains for MVP across three scopes: Paystreet API migration, Admin dashboard, and overall frontend readiness.
 
@@ -92,7 +92,7 @@ Gaps (pre-MVP polish)
 
 ---
 
-### Current MVP Status
+### Current Status
 
 | Component | Status | Completion | Priority |
 |---|---|---:|---|
@@ -103,12 +103,6 @@ Gaps (pre-MVP polish)
 | Admin Dashboard | ⚠️ Partial | 75% | 🟡 High |
 | Frontend Routing/Core Flows | ✅ Ready | 80% | 🟡 Medium |
 
----
-
-### Notes & Assumptions
-- Legacy Paystreet endpoints remain accessible and are used as fallback when provider services are unavailable.
-- Active provider axios instance is available via `providerManager`; ensure it’s initialized before admin metrics calls.
-- Security: ensure tokens are stored securely and cleared on 401; consider rotating keys and CSP/headers at deploy time.
 
 ---
 
