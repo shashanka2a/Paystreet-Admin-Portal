@@ -42,7 +42,7 @@ export default function App() {
   };
 
   return (
-    <div className="flex h-screen bg-[#121212]">
+    <div className="flex h-screen bg-black">
       <Sidebar activeView={activeView} setActiveView={setActiveView} />
       <div className="flex-1 flex flex-col overflow-hidden">
         <TopBar />

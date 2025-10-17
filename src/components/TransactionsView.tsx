@@ -125,12 +125,12 @@ export function TransactionsView() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-white mb-2">Transaction Monitor</h1>
-          <p className="text-[#b3b3b3]">Track and review all financial transactions</p>
+          <h1 className="text-white mb-2 text-2xl font-bold">Transaction Monitor</h1>
+          <p className="text-white">Track and review all financial transactions</p>
         </div>
         <div className="flex gap-2 items-center">
           <select
-            className="border border-[#333333] rounded-md px-2 py-1 text-sm bg-[#2a2a2a] text-white"
+            className="border border-[#38B000] rounded-md px-2 py-1 text-sm bg-[#1a1a1a] text-white"
             value={timeZone || ''}
             onChange={(e) => setTimeZone(e.target.value || undefined)}
           >
@@ -176,13 +176,13 @@ export function TransactionsView() {
         <CardHeader>
           <div className="flex items-center gap-4">
             <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#b3b3b3]" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white" />
               <input
                 type="text"
                 placeholder="Search by transaction ID or client..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-[#333333] rounded-lg bg-[#2a2a2a] text-white placeholder-[#b3b3b3] focus:outline-none focus:ring-2 focus:ring-[#38B000] focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-[#38B000] rounded-lg bg-[#1a1a1a] text-white placeholder-white focus:outline-none focus:ring-2 focus:ring-[#38B000] focus:border-[#38B000]"
               />
             </div>
             <Button variant="outline" size="sm">
@@ -208,20 +208,20 @@ export function TransactionsView() {
               {filteredTransactions.map((tx) => {
                 const { date, time } = convertToTimeZone(`${tx.date}T${tx.time}:00`, timeZone);
                 return (
-                  <TableRow key={tx.id} className="hover:bg-[#2a2a2a]">
+                  <TableRow key={tx.id} className="hover:bg-[#1a1a1a] border-b border-[#38B000]">
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        {tx.flagged && <Flag className="w-4 h-4 text-red-500" />}
-                        <span className="text-[#38B000]">{tx.id}</span>
+                        {tx.flagged && <Flag className="w-4 h-4 text-[#ef4444]" />}
+                        <span className="text-[#38B000] font-semibold">{tx.id}</span>
                       </div>
                     </TableCell>
-                    <TableCell className="text-[#b3b3b3]">
+                    <TableCell className="text-white">
                       {date}
                       <br />
-                      <span className="text-xs text-[#b3b3b3]">{time}</span>
+                      <span className="text-xs text-white">{time}</span>
                     </TableCell>
-                    <TableCell>{tx.client}</TableCell>
-                    <TableCell>{tx.amount}</TableCell>
+                    <TableCell className="text-white">{tx.client}</TableCell>
+                    <TableCell className="text-white font-semibold">{tx.amount}</TableCell>
                     <TableCell>
                       <Badge variant="secondary" className="bg-gray-100 text-gray-700">
                         {tx.type}

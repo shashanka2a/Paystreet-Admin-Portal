@@ -72,8 +72,8 @@ export function KYCView() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-white mb-2">KYC Applications</h1>
-          <p className="text-[#b3b3b3]">Review and approve client verification requests</p>
+          <h1 className="text-white mb-2 text-2xl font-bold">KYC Applications</h1>
+          <p className="text-white">Review and approve client verification requests</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline">
@@ -87,13 +87,13 @@ export function KYCView() {
         <CardHeader>
           <div className="flex items-center gap-4">
             <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#b3b3b3]" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white" />
               <input
                 type="text"
                 placeholder="Search applications..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-[#333333] rounded-lg bg-[#2a2a2a] text-white placeholder-[#b3b3b3] focus:outline-none focus:ring-2 focus:ring-[#38B000] focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-[#38B000] rounded-lg bg-[#1a1a1a] text-white placeholder-white focus:outline-none focus:ring-2 focus:ring-[#38B000] focus:border-[#38B000]"
               />
             </div>
           </div>
@@ -125,11 +125,11 @@ export function KYCView() {
                 </TableHeader>
                 <TableBody>
                   {filteredApplications.map((app) => (
-                    <TableRow key={app.id} className="hover:bg-[#2a2a2a]">
-                      <TableCell>{app.name}</TableCell>
-                      <TableCell>{app.country}</TableCell>
-                      <TableCell>{app.type}</TableCell>
-                      <TableCell className="text-[#b3b3b3]">{app.submittedDate}</TableCell>
+                    <TableRow key={app.id} className="hover:bg-[#1a1a1a] border-b border-[#38B000]">
+                      <TableCell className="text-white">{app.name}</TableCell>
+                      <TableCell className="text-white">{app.country}</TableCell>
+                      <TableCell className="text-white">{app.type}</TableCell>
+                      <TableCell className="text-white">{app.submittedDate}</TableCell>
                       <TableCell>
                         <Badge
                           variant="secondary"
