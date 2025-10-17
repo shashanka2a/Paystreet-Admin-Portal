@@ -5,6 +5,7 @@ import { Sidebar } from './components/Sidebar';
 import { TopBar } from './components/TopBar';
 import { DashboardView } from './components/DashboardView';
 import { KYCView } from './components/KYCView';
+import { KYBView } from './components/KYBView';
 import { ClientsView } from './components/ClientsView';
 import { TransactionsView } from './components/TransactionsView';
 import { MessagesView } from './components/MessagesView';
@@ -21,6 +22,8 @@ export default function App() {
         return <DashboardView />;
       case 'kyc':
         return <KYCView />;
+      case 'kyb':
+        return <KYBView />;
       case 'clients':
         return <ClientsView />;
       case 'transactions':
@@ -39,7 +42,7 @@ export default function App() {
   };
 
   return (
-    <div className="flex h-screen bg-[#F8F9FB]">
+    <div className="flex h-screen bg-[#121212]">
       <Sidebar activeView={activeView} setActiveView={setActiveView} />
       <div className="flex-1 flex flex-col overflow-hidden">
         <TopBar />

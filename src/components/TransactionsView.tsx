@@ -7,6 +7,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Textarea } from './ui/textarea';
 import { ScrollArea } from './ui/scroll-area';
 import { Search, Download, Flag, ArrowUpDown, TrendingUp, MessageSquare, Send, CheckCircle, XCircle } from 'lucide-react';
+import { convertToTimeZone } from '../lib/datetime';
+import { decideFlaggedTransaction } from '../lib/transactions';
 
 const transactions = [
   {
@@ -93,6 +95,7 @@ export function TransactionsView() {
   const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [newQuery, setNewQuery] = useState('');
+  const [timeZone, setTimeZone] = useState<string | undefined>(undefined);
 
   const filteredTransactions = transactions.filter(
     (tx) =>
@@ -100,14 +103,41 @@ export function TransactionsView() {
       tx.client.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const zones = [
+    { id: undefined, label: 'Local' },
+    { id: 'UTC', label: 'UTC' },
+    { id: 'Europe/London', label: 'Europe/London' },
+    { id: 'America/New_York', label: 'America/New_York' },
+    { id: 'Asia/Singapore', label: 'Asia/Singapore' },
+  ];
+
+  async function onApprove(id: string) {
+    await decideFlaggedTransaction(id, 'approved');
+    setSelectedTransaction(null);
+  }
+
+  async function onReject(id: string) {
+    await decideFlaggedTransaction(id, 'rejected');
+    setSelectedTransaction(null);
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-gray-900 mb-2">Transaction Monitor</h1>
-          <p className="text-gray-600">Track and review all financial transactions</p>
+          <h1 className="text-white mb-2">Transaction Monitor</h1>
+          <p className="text-[#b3b3b3]">Track and review all financial transactions</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
+          <select
+            className="border border-[#333333] rounded-md px-2 py-1 text-sm bg-[#2a2a2a] text-white"
+            value={timeZone || ''}
+            onChange={(e) => setTimeZone(e.target.value || undefined)}
+          >
+            {zones.map((z) => (
+              <option key={String(z.id)} value={z.id || ''}>{z.label}</option>
+            ))}
+          </select>
           <Button variant="outline">
             <Download className="w-4 h-4 mr-2" />
             CSV
@@ -146,13 +176,13 @@ export function TransactionsView() {
         <CardHeader>
           <div className="flex items-center gap-4">
             <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-[#b3b3b3]" />
               <input
                 type="text"
                 placeholder="Search by transaction ID or client..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6366F1] focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-[#333333] rounded-lg bg-[#2a2a2a] text-white placeholder-[#b3b3b3] focus:outline-none focus:ring-2 focus:ring-[#38B000] focus:border-transparent"
               />
             </div>
             <Button variant="outline" size="sm">
@@ -175,49 +205,52 @@ export function TransactionsView() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredTransactions.map((tx) => (
-                <TableRow key={tx.id} className="hover:bg-gray-50">
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      {tx.flagged && <Flag className="w-4 h-4 text-red-500" />}
-                      <span className="text-[#6366F1]">{tx.id}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-gray-600">
-                    {tx.date}
-                    <br />
-                    <span className="text-xs text-gray-400">{tx.time}</span>
-                  </TableCell>
-                  <TableCell>{tx.client}</TableCell>
-                  <TableCell>{tx.amount}</TableCell>
-                  <TableCell>
-                    <Badge variant="secondary" className="bg-gray-100 text-gray-700">
-                      {tx.type}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant="secondary"
-                      className={
-                        tx.status === 'completed'
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-orange-100 text-orange-700'
-                      }
-                    >
-                      {tx.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setSelectedTransaction(tx)}
-                    >
-                      View Details
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {filteredTransactions.map((tx) => {
+                const { date, time } = convertToTimeZone(`${tx.date}T${tx.time}:00`, timeZone);
+                return (
+                  <TableRow key={tx.id} className="hover:bg-[#2a2a2a]">
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        {tx.flagged && <Flag className="w-4 h-4 text-red-500" />}
+                        <span className="text-[#38B000]">{tx.id}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-[#b3b3b3]">
+                      {date}
+                      <br />
+                      <span className="text-xs text-[#b3b3b3]">{time}</span>
+                    </TableCell>
+                    <TableCell>{tx.client}</TableCell>
+                    <TableCell>{tx.amount}</TableCell>
+                    <TableCell>
+                      <Badge variant="secondary" className="bg-gray-100 text-gray-700">
+                        {tx.type}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="secondary"
+                        className={
+                          tx.status === 'completed'
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-orange-100 text-orange-700'
+                        }
+                      >
+                        {tx.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedTransaction(tx)}
+                      >
+                        View Details
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </CardContent>
@@ -259,11 +292,11 @@ export function TransactionsView() {
                 </div>
                 <div>
                   <div className="text-sm text-gray-600 mb-1">Date</div>
-                  <div className="text-gray-900">{selectedTransaction.date}</div>
+                  <div className="text-gray-900">{convertToTimeZone(`${selectedTransaction.date}T${selectedTransaction.time}:00`, timeZone).date}</div>
                 </div>
                 <div>
                   <div className="text-sm text-gray-600 mb-1">Time</div>
-                  <div className="text-gray-900">{selectedTransaction.time}</div>
+                  <div className="text-gray-900">{convertToTimeZone(`${selectedTransaction.date}T${selectedTransaction.time}:00`, timeZone).time}</div>
                 </div>
                 <div>
                   <div className="text-sm text-gray-600 mb-1">Type</div>
@@ -348,11 +381,11 @@ export function TransactionsView() {
                 </Button>
                 {selectedTransaction.flagged && (
                   <>
-                    <Button variant="outline" className="flex-1 text-red-600 border-red-200 hover:bg-red-50">
+                    <Button variant="outline" className="flex-1 text-red-600 border-red-200 hover:bg-red-50" onClick={() => onReject(selectedTransaction.id)}>
                       <XCircle className="w-4 h-4 mr-2" />
                       Reject
                     </Button>
-                    <Button className="flex-1 bg-green-600 hover:bg-green-700 text-white">
+                    <Button className="flex-1 bg-green-600 hover:bg-green-700 text-white" onClick={() => onApprove(selectedTransaction.id)}>
                       <CheckCircle className="w-4 h-4 mr-2" />
                       Approve
                     </Button>
