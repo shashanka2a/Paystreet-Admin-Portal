@@ -30,9 +30,9 @@ const navItems = [
 
 export function Sidebar({ activeView, setActiveView }: SidebarProps) {
   return (
-    <div className="w-64 bg-black border-r border-[#38B000] flex flex-col">
-      <div className="p-6 border-b border-[#38B000]">
-        <h1 className="bg-gradient-to-r from-[#38B000] to-[#4ade80] bg-clip-text text-transparent text-2xl font-bold">
+    <div className="w-64 bg-black border-r border-[#00A878] flex flex-col">
+      <div className="p-6 border-b border-[#00A878]">
+        <h1 className="bg-gradient-to-r from-[#007A5E] to-[#00C084] bg-clip-text text-transparent text-2xl font-bold">
           Paystreet
         </h1>
         <p className="text-sm text-white mt-1">Admin Portal</p>
@@ -47,8 +47,8 @@ export function Sidebar({ activeView, setActiveView }: SidebarProps) {
               onClick={() => setActiveView(item.id)}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 relative ${
                 isActive
-                  ? 'bg-[#38B000] text-black font-semibold shadow-lg'
-                  : 'text-white hover:bg-[#1a1a1a] hover:text-[#38B000]'
+                  ? 'bg-[#00A878] text-black font-semibold shadow-lg shadow-[#00A878]/30 paystreet-glow'
+                  : 'text-white hover:bg-[#1a1a1a] hover:text-[#00A878]'
               }`}
             >
               {isActive && (

@@ -130,7 +130,7 @@ export function TransactionsView() {
         </div>
         <div className="flex gap-2 items-center">
           <select
-            className="border border-[#38B000] rounded-md px-2 py-1 text-sm bg-[#1a1a1a] text-white"
+            className="border border-[#00A878] rounded-md px-2 py-1 text-sm bg-[#1a1a1a] text-white"
             value={timeZone || ''}
             onChange={(e) => setTimeZone(e.target.value || undefined)}
           >
@@ -182,7 +182,7 @@ export function TransactionsView() {
                 placeholder="Search by transaction ID or client..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-[#38B000] rounded-lg bg-[#1a1a1a] text-white placeholder-white focus:outline-none focus:ring-2 focus:ring-[#38B000] focus:border-[#38B000]"
+                className="w-full pl-10 pr-4 py-2 border border-[#00A878] rounded-lg bg-[#1a1a1a] text-white placeholder-white focus:outline-none focus:ring-2 focus:ring-[#00A878] focus:border-[#00A878]"
               />
             </div>
             <Button variant="outline" size="sm">
@@ -208,11 +208,11 @@ export function TransactionsView() {
               {filteredTransactions.map((tx) => {
                 const { date, time } = convertToTimeZone(`${tx.date}T${tx.time}:00`, timeZone);
                 return (
-                  <TableRow key={tx.id} className="hover:bg-[#1a1a1a] border-b border-[#38B000]">
+                  <TableRow key={tx.id} className="hover:bg-[#1a1a1a] border-b border-[#00A878]">
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        {tx.flagged && <Flag className="w-4 h-4 text-[#ef4444]" />}
-                        <span className="text-[#38B000] font-semibold">{tx.id}</span>
+                        {tx.flagged && <Flag className="w-4 h-4 text-[#FF4D4D]" />}
+                        <span className="text-[#00A878] font-semibold">{tx.id}</span>
                       </div>
                     </TableCell>
                     <TableCell className="text-white">
@@ -381,11 +381,11 @@ export function TransactionsView() {
                 </Button>
                 {selectedTransaction.flagged && (
                   <>
-                    <Button variant="outline" className="flex-1 text-red-600 border-red-200 hover:bg-red-50" onClick={() => onReject(selectedTransaction.id)}>
+                    <Button variant="outline" className="flex-1 text-[#FF4D4D] border-[#FF4D4D] hover:bg-[#FF4D4D]/10" onClick={() => onReject(selectedTransaction.id)}>
                       <XCircle className="w-4 h-4 mr-2" />
                       Reject
                     </Button>
-                    <Button className="flex-1 bg-green-600 hover:bg-green-700 text-white" onClick={() => onApprove(selectedTransaction.id)}>
+                    <Button className="flex-1 bg-gradient-to-r from-[#007A5E] to-[#00C084] hover:from-[#00A878] hover:to-[#2DD881] text-white paystreet-glow" onClick={() => onApprove(selectedTransaction.id)}>
                       <CheckCircle className="w-4 h-4 mr-2" />
                       Approve
                     </Button>

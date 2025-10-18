@@ -93,7 +93,7 @@ export function KYCView() {
                 placeholder="Search applications..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-[#38B000] rounded-lg bg-[#1a1a1a] text-white placeholder-white focus:outline-none focus:ring-2 focus:ring-[#38B000] focus:border-[#38B000]"
+                className="w-full pl-10 pr-4 py-2 border border-[#00A878] rounded-lg bg-[#1a1a1a] text-white placeholder-white focus:outline-none focus:ring-2 focus:ring-[#00A878] focus:border-[#00A878]"
               />
             </div>
           </div>
@@ -125,7 +125,7 @@ export function KYCView() {
                 </TableHeader>
                 <TableBody>
                   {filteredApplications.map((app) => (
-                    <TableRow key={app.id} className="hover:bg-[#1a1a1a] border-b border-[#38B000]">
+                    <TableRow key={app.id} className="hover:bg-[#1a1a1a] border-b border-[#00A878]">
                       <TableCell className="text-white">{app.name}</TableCell>
                       <TableCell className="text-white">{app.country}</TableCell>
                       <TableCell className="text-white">{app.type}</TableCell>
@@ -284,7 +284,7 @@ export function KYCView() {
                 <Button variant="outline" onClick={() => setSelectedApplication(null)}>
                   Cancel
                 </Button>
-                <Button className="bg-gradient-to-r from-[#6366F1] to-[#8B5CF6]">
+                <Button className="bg-gradient-to-r from-[#007A5E] to-[#00C084] hover:from-[#00A878] hover:to-[#2DD881] paystreet-glow">
                   Submit Decision
                 </Button>
               </div>

@@ -2649,7 +2649,7 @@
   --card-foreground: #ffffff;
   --popover: #000000;
   --popover-foreground: #ffffff;
-  --primary: #38B000;
+  --primary: #00A878;
   --primary-foreground: #000000;
   --secondary: #1a1a1a;
   --secondary-foreground: #ffffff;
@@ -2657,29 +2657,29 @@
   --muted-foreground: #ffffff;
   --accent: #1a1a1a;
   --accent-foreground: #ffffff;
-  --destructive: #ef4444;
+  --destructive: #FF4D4D;
   --destructive-foreground: #ffffff;
-  --border: #38B000;
+  --border: #00A878;
   --input: #1a1a1a;
   --input-background: #1a1a1a;
   --switch-background: #1a1a1a;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
-  --ring: #38B000;
-  --chart-1: #38B000;
-  --chart-2: #4ade80;
-  --chart-3: #22c55e;
-  --chart-4: #16a34a;
-  --chart-5: #15803d;
+  --ring: #00A878;
+  --chart-1: #00A878;
+  --chart-2: #2DD881;
+  --chart-3: #007A5E;
+  --chart-4: #00C084;
+  --chart-5: #2DD881;
   --radius: .625rem;
   --sidebar: #000000;
   --sidebar-foreground: #ffffff;
-  --sidebar-primary: #38B000;
+  --sidebar-primary: #00A878;
   --sidebar-primary-foreground: #000000;
   --sidebar-accent: #1a1a1a;
   --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: #38B000;
-  --sidebar-ring: #38B000;
+  --sidebar-border: #00A878;
+  --sidebar-ring: #00A878;
 }
 
 .dark {
@@ -2711,16 +2711,43 @@
   --chart-5: #15803d;
   --sidebar: #000000;
   --sidebar-foreground: #ffffff;
-  --sidebar-primary: #38B000;
+  --sidebar-primary: #00A878;
   --sidebar-primary-foreground: #000000;
   --sidebar-accent: #1a1a1a;
   --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: #38B000;
-  --sidebar-ring: #38B000;
+  --sidebar-border: #00A878;
+  --sidebar-ring: #00A878;
 }
 
 html {
   font-size: var(--font-size);
+}
+
+/* PayStreet Global Network Aesthetic */
+@keyframes paystreet-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(0, 168, 120, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(0, 168, 120, 0.5);
+  }
+}
+
+@keyframes paystreet-pulse {
+  0%, 100% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.paystreet-glow {
+  animation: paystreet-glow 3s ease-in-out infinite;
+}
+
+.paystreet-pulse {
+  animation: paystreet-pulse 2s ease-in-out infinite;
 }
 
 @property --tw-translate-x {
