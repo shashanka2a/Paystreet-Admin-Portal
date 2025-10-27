@@ -189,3 +189,4 @@ class FallbackProvider implements BaseProvider {
 
 // Singleton instance
 export const providerManager = new ProviderManager();
+

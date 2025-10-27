@@ -189,3 +189,4 @@ export class WallexService {
 
 // Singleton instance
 export const wallexService = new WallexService();
+

@@ -20,7 +20,7 @@ export interface WallexTransaction {
   type: 'payment' | 'conversion' | 'deposit' | 'withdrawal';
   amount: number;
   currency: string;
-  status: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled';
+  status: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled' | 'flagged';
   timestamp: string;
   description?: string;
   reference?: string;
@@ -121,3 +121,4 @@ export interface BaseProvider {
   getCollectionAccounts(): Promise<WallexCollectionAccount[]>;
   getProviderStatus(): Promise<ProviderStatus>;
 }
+

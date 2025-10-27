@@ -23,7 +23,7 @@ export class WallexAdapter implements BaseProvider {
     this.credentials = credentials;
   }
 
-  private async authenticate(): Promise<string> {
+  public async authenticate(): Promise<string> {
     // Check if token is still valid
     if (this.accessToken && Date.now() < this.tokenExpiry) {
       return this.accessToken;
@@ -50,7 +50,7 @@ export class WallexAdapter implements BaseProvider {
       this.accessToken = data.accessToken;
       this.tokenExpiry = Date.now() + (data.expiresIn * 1000) - 60000; // 1 minute buffer
       
-      return this.accessToken;
+      return this.accessToken!;
     } catch (error) {
       console.error('Wallex authentication error:', error);
       throw new Error('Failed to authenticate with Wallex API');
@@ -209,3 +209,4 @@ export class WallexAdapter implements BaseProvider {
     }
   }
 }
+

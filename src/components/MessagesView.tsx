@@ -35,7 +35,7 @@ import {
   TrendingDown
 } from 'lucide-react';
 import { 
-  useMessages,
+  useMessageThreads,
   useSendMessage,
   useMarkAsRead,
   useArchiveMessage,
@@ -52,7 +52,7 @@ export function MessagesView() {
   const [newMessage, setNewMessage] = useState('');
   const [replyMessage, setReplyMessage] = useState('');
 
-  const { data: threads = [], isLoading } = useMessages();
+  const { data: threads = [], isLoading } = useMessageThreads();
   const sendMessage = useSendMessage();
   const markAsRead = useMarkAsRead();
   const archiveMessage = useArchiveMessage();
@@ -129,7 +129,7 @@ export function MessagesView() {
     },
     { 
       title: 'Unread Messages', 
-      value: threads.filter(t => t.status === 'unread').length.toString(), 
+      value: threads.filter(t => t.unreadCount > 0).length.toString(), 
       change: '-8.3%',
       changeType: 'positive',
       icon: EyeOff,
@@ -150,7 +150,7 @@ export function MessagesView() {
       sendMessage.mutate({
         threadId: selectedThread.id,
         content: newMessage,
-        priority: 'medium'
+        priority: 'normal'
       });
       setNewMessage('');
     }
@@ -161,8 +161,7 @@ export function MessagesView() {
       sendMessage.mutate({
         threadId: selectedThread.id,
         content: replyMessage,
-        priority: 'medium',
-        isReply: true
+        priority: 'normal'
       });
       setReplyMessage('');
     }
@@ -295,7 +294,7 @@ export function MessagesView() {
                     </div>
                   </TableCell>
                   <TableCell className="text-muted-foreground">
-                    {format(new Date(thread.lastActivity), 'dd/MM/yyyy HH:mm')}
+                    {format(new Date(thread.updatedAt), 'dd/MM/yyyy HH:mm')}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
@@ -307,11 +306,11 @@ export function MessagesView() {
                         <Eye className="w-4 h-4 mr-2" />
                         View
                       </Button>
-                      {thread.status === 'unread' && (
+                      {thread.unreadCount > 0 && (
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => markAsRead.mutate({ threadId: thread.id })}
+                          onClick={() => markAsRead.mutate(thread.id)}
                         >
                           <CheckCircle className="w-4 h-4" />
                         </Button>
@@ -369,7 +368,7 @@ export function MessagesView() {
                         <Label className="text-sm text-muted-foreground">Last Activity</Label>
                       </div>
                       <div className="text-foreground">
-                        {format(new Date(selectedThread.lastActivity), 'dd/MM/yyyy HH:mm')}
+                        {format(new Date(selectedThread.updatedAt), 'dd/MM/yyyy HH:mm')}
                       </div>
                     </div>
                   </div>
@@ -392,7 +391,7 @@ export function MessagesView() {
                       <div className="flex items-center gap-2">
                         <Label className="text-sm text-muted-foreground">Messages</Label>
                         <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
-                          {selectedThread.messageCount}
+                          {selectedThread.unreadCount}
               </Badge>
             </div>
           </div>
@@ -412,7 +411,7 @@ export function MessagesView() {
                 <div
                   key={message.id}
                           className={`p-4 rounded-lg ${
-                      message.sender === 'admin'
+                      message.senderId === 'admin-1'
                               ? 'bg-primary text-primary-foreground ml-8'
                               : 'bg-muted text-foreground mr-8'
                           }`}
@@ -420,7 +419,7 @@ export function MessagesView() {
                           <div className="flex items-start justify-between mb-2">
                             <div className="flex items-center gap-2">
                               <span className="text-sm font-medium">
-                                {message.sender === 'admin' ? 'Admin' : selectedThread.clientName}
+                                {message.senderId === 'admin-1' ? 'Admin' : selectedThread.clientName}
                               </span>
                               {message.priority === 'high' && (
                                 <Flag className="w-3 h-3 text-red-300" />
@@ -430,7 +429,7 @@ export function MessagesView() {
                               <span className="text-xs opacity-70">
                                 {format(new Date(message.timestamp), 'dd/MM/yyyy HH:mm')}
                               </span>
-                              {message.read && (
+                              {message.status === 'read' && (
                                 <CheckCircle className="w-3 h-3 opacity-70" />
                               )}
                             </div>
@@ -508,7 +507,7 @@ export function MessagesView() {
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={() => archiveMessage.mutate({ threadId: selectedThread.id })}
+                  onClick={() => archiveMessage.mutate(selectedThread.id)}
                   disabled={archiveMessage.isPending}
                   className="flex-1"
                 >
@@ -517,7 +516,7 @@ export function MessagesView() {
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={() => markAsRead.mutate({ threadId: selectedThread.id })}
+                  onClick={() => markAsRead.mutate(selectedThread.id)}
                   disabled={markAsRead.isPending}
                   className="flex-1"
                 >

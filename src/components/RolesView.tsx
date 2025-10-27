@@ -73,7 +73,7 @@ export function RolesView() {
 
   const filteredUsers = users.filter((user) => {
     const matchesSearch = 
-      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.role.toLowerCase().includes(searchQuery.toLowerCase());
     
@@ -315,7 +315,7 @@ export function RolesView() {
             <TableBody>
                   {filteredUsers.map((user) => (
                     <TableRow key={user.id} className="hover:bg-muted/50 border-border">
-                      <TableCell className="font-medium text-foreground">{user.name}</TableCell>
+                      <TableCell className="font-medium text-foreground">{`${user.firstName} ${user.lastName}`}</TableCell>
                       <TableCell className="text-muted-foreground">{user.email}</TableCell>
                   <TableCell>
                         <div className="flex items-center gap-2">
@@ -406,7 +406,7 @@ export function RolesView() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => deleteRole.mutate({ roleId: role.id })}
+                            onClick={() => deleteRole.mutate(role.id)}
                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>
@@ -528,7 +528,7 @@ export function RolesView() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <User className="w-5 h-5" />
-              User Details - {selectedUser?.name}
+              User Details - {selectedUser ? `${selectedUser.firstName} ${selectedUser.lastName}` : ''}
             </DialogTitle>
           </DialogHeader>
           {selectedUser && (
@@ -536,7 +536,7 @@ export function RolesView() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label className="text-sm text-muted-foreground">Name</Label>
-                  <div className="text-foreground font-medium">{selectedUser.name}</div>
+                  <div className="text-foreground font-medium">{`${selectedUser.firstName} ${selectedUser.lastName}`}</div>
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm text-muted-foreground">Email</Label>
@@ -588,14 +588,14 @@ export function RolesView() {
                 </Button>
                 <Button 
                   variant="outline" 
-                  onClick={() => updateUser.mutate({ userId: selectedUser.id, status: selectedUser.status === 'active' ? 'suspended' : 'active' })}
+                  onClick={() => updateUser.mutate({ id: selectedUser.id, status: selectedUser.status === 'active' ? 'suspended' : 'active' })}
                   className="flex-1"
                 >
                   {selectedUser.status === 'active' ? 'Suspend' : 'Activate'}
               </Button>
               <Button
                   variant="destructive" 
-                  onClick={() => deleteUser.mutate({ userId: selectedUser.id })}
+                  onClick={() => deleteUser.mutate(selectedUser.id)}
                   className="flex-1"
               >
                   Delete User

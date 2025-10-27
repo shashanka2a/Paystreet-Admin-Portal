@@ -673,7 +673,7 @@ export function ClientsView() {
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
-                        {selectedClient.bankAccounts.map((account) => (
+                        {selectedClient.bankAccounts?.map((account) => (
                           <div key={account.id} className="p-4 bg-muted/50 rounded-lg border border-border">
                             <div className="grid grid-cols-2 gap-4">
                               <div className="space-y-2">
