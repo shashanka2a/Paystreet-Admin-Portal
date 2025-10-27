@@ -3,6 +3,7 @@
 import {
   LayoutDashboard,
   UserCheck,
+  Building2,
   Users,
   ArrowLeftRight,
   MessageSquare,
@@ -18,24 +19,24 @@ interface SidebarProps {
 
 const navItems = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { id: 'kyc', label: 'KYC', icon: UserCheck },
-  { id: 'kyb', label: 'KYB', icon: Shield },
-  { id: 'clients', label: 'Clients', icon: Users },
+  { id: 'kyc', label: 'KYC Management', icon: UserCheck },
+  { id: 'kyb', label: 'KYB Management', icon: Building2 },
+  { id: 'clients', label: 'Client Profiles', icon: Users },
   { id: 'transactions', label: 'Transactions', icon: ArrowLeftRight },
   { id: 'messages', label: 'Messages', icon: MessageSquare },
-  { id: 'roles', label: 'Roles', icon: Shield },
+  { id: 'roles', label: 'User Roles', icon: Shield },
   { id: 'audit', label: 'Audit Log', icon: FileText },
   { id: 'settings', label: 'Settings', icon: Settings },
 ];
 
 export function Sidebar({ activeView, setActiveView }: SidebarProps) {
   return (
-    <div className="w-64 bg-black border-r border-[#00A878] flex flex-col">
-      <div className="p-6 border-b border-[#00A878]">
-        <h1 className="bg-gradient-to-r from-[#007A5E] to-[#00C084] bg-clip-text text-transparent text-2xl font-bold">
-          Paystreet
+    <div className="w-64 bg-sidebar border-r border-sidebar-border flex flex-col">
+      <div className="p-6 border-b border-sidebar-border">
+        <h1 className="bg-gradient-to-r from-primary to-chart-2 bg-clip-text text-transparent text-2xl font-bold">
+          PayStreet
         </h1>
-        <p className="text-sm text-white mt-1">Admin Portal</p>
+        <p className="text-sm text-sidebar-foreground mt-1">Admin Portal v2</p>
       </div>
       <nav className="flex-1 p-4 space-y-1">
         {navItems.map((item) => {
@@ -47,12 +48,12 @@ export function Sidebar({ activeView, setActiveView }: SidebarProps) {
               onClick={() => setActiveView(item.id)}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 relative ${
                 isActive
-                  ? 'bg-[#00A878] text-black font-semibold shadow-lg shadow-[#00A878]/30 paystreet-glow'
-                  : 'text-white hover:bg-[#1a1a1a] hover:text-[#00A878]'
+                  ? 'bg-sidebar-primary text-sidebar-primary-foreground font-semibold shadow-lg paystreet-glow'
+                  : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
               }`}
             >
               {isActive && (
-                <div className="absolute left-0 top-0 bottom-0 w-1 bg-black rounded-r" />
+                <div className="absolute left-0 top-0 bottom-0 w-1 bg-sidebar-primary-foreground rounded-r" />
               )}
               <Icon className="w-5 h-5" />
               <span className="text-sm">{item.label}</span>

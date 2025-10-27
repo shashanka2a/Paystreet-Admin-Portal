@@ -1,21 +1,22 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { Providers } from "./providers";
 
 export const metadata: Metadata = {
-  title: "Paystreet Admin Portal UI",
-  description: "Admin portal for Paystreet",
+  title: "PayStreet Admin Portal v2",
+  description: "Enhanced Admin Portal for PayStreet - KYC, KYB, Transaction Monitoring & More",
   icons: {
     icon: "/favicon.ico",
   },
   openGraph: {
-    title: "Paystreet Admin Portal UI",
-    description: "Admin portal for Paystreet",
+    title: "PayStreet Admin Portal v2",
+    description: "Enhanced Admin Portal for PayStreet - KYC, KYB, Transaction Monitoring & More",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Paystreet Admin",
+        alt: "PayStreet Admin Portal",
       },
     ],
   },
@@ -23,8 +24,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning className="dark">
-      <body className="bg-black text-white">{children}</body>
+    <html lang="en" suppressHydrationWarning>
+      <body className="min-h-screen bg-background font-sans antialiased">
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }

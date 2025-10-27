@@ -3,117 +3,175 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from './ui/sheet';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { Textarea } from './ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { ScrollArea } from './ui/scroll-area';
-import { Search, Filter, Download, Eye, Building2, MessageSquare, Send, CheckCircle, XCircle } from 'lucide-react';
-
-const clients = [
-  {
-    id: 1,
-    name: 'Acme Corporation Ltd',
-    email: 'contact@acmecorp.com',
-    country: 'United Kingdom',
-    businessType: 'Technology',
-    status: 'active',
-    joinDate: '2024-03-15',
-    accountBalance: '£245,000',
-  },
-  {
-    id: 2,
-    name: 'TechVentures Inc',
-    email: 'info@techventures.com',
-    country: 'United States',
-    businessType: 'Finance',
-    status: 'active',
-    joinDate: '2024-05-22',
-    accountBalance: '$892,400',
-  },
-  {
-    id: 3,
-    name: 'Global Imports LLC',
-    email: 'admin@globalimports.com',
-    country: 'Canada',
-    businessType: 'Import/Export',
-    status: 'inactive',
-    joinDate: '2023-11-08',
-    accountBalance: 'CAD 0',
-  },
-  {
-    id: 4,
-    name: 'Innovation Hub Ltd',
-    email: 'hello@innovationhub.sg',
-    country: 'Singapore',
-    businessType: 'Consulting',
-    status: 'active',
-    joinDate: '2024-08-14',
-    accountBalance: 'SGD 156,800',
-  },
-  {
-    id: 5,
-    name: 'StartupFlow Ltd',
-    email: 'team@startupflow.de',
-    country: 'Germany',
-    businessType: 'Technology',
-    status: 'pending',
-    joinDate: '2025-10-01',
-    accountBalance: '€0',
-  },
-];
-
-const ongoingDDQueries = [
-  {
-    id: 1,
-    date: '2025-10-12',
-    from: 'Admin',
-    message: 'Please provide updated proof of address for all directors.',
-    status: 'pending',
-  },
-  {
-    id: 2,
-    date: '2025-10-10',
-    from: 'Client',
-    message: 'We have uploaded the requested documents. Please review.',
-    status: 'replied',
-  },
-  {
-    id: 3,
-    date: '2025-10-08',
-    from: 'Admin',
-    message: 'Documents verified. No further action required.',
-    status: 'resolved',
-  },
-];
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import { 
+  Search, 
+  Download, 
+  Eye, 
+  User, 
+  Building2,
+  CreditCard,
+  ArrowLeftRight,
+  Shield,
+  AlertTriangle,
+  CheckCircle,
+  XCircle,
+  Clock,
+  Mail,
+  Phone,
+  MapPin,
+  Calendar,
+  Globe,
+  FileText,
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+  Activity,
+  Users,
+  Banknote
+} from 'lucide-react';
+import { 
+  useClients,
+  useClientTransactions,
+  type Client,
+  type Transaction 
+} from '../lib/api-hooks';
+import { format } from 'date-fns';
 
 export function ClientsView() {
-  const [selectedClient, setSelectedClient] = useState<any>(null);
-  const [activeFilter, setActiveFilter] = useState('all');
+  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [newQuery, setNewQuery] = useState('');
+  const [activeTab, setActiveTab] = useState('overview');
+
+  const { data: clients = [], isLoading } = useClients();
+  const { data: clientTransactions = [] } = useClientTransactions(selectedClient?.id || '');
 
   const filteredClients = clients.filter((client) => {
-    const matchesFilter = activeFilter === 'all' || client.status === activeFilter;
     const matchesSearch =
       client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       client.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      client.country.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesFilter && matchesSearch;
+      client.companyName.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    return matchesSearch;
   });
+
+  const formatAmount = (amount: number, currency: string) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: currency,
+      minimumFractionDigits: 2,
+    }).format(amount);
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'active': return <CheckCircle className="w-4 h-4 text-green-600" />;
+      case 'suspended': return <XCircle className="w-4 h-4 text-red-600" />;
+      case 'pending': return <Clock className="w-4 h-4 text-orange-600" />;
+      default: return <AlertTriangle className="w-4 h-4 text-orange-600" />;
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    const variants = {
+      active: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
+      suspended: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300',
+      pending: 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300',
+      restricted: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300'
+    };
+    
+    return (
+      <Badge variant="secondary" className={variants[status as keyof typeof variants]}>
+        {status}
+      </Badge>
+    );
+  };
+
+  const getRiskBadge = (riskScore: number) => {
+    if (riskScore < 30) {
+      return <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">Low Risk</Badge>;
+    } else if (riskScore < 70) {
+      return <Badge variant="secondary" className="bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300">Medium Risk</Badge>;
+    } else {
+      return <Badge variant="secondary" className="bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300">High Risk</Badge>;
+    }
+  };
+
+  const getKYBStatusBadge = (status: string) => {
+    const variants = {
+      approved: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
+      pending: 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300',
+      rejected: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300',
+      under_review: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
+    };
+    
+    return (
+      <Badge variant="secondary" className={variants[status as keyof typeof variants]}>
+        {status.replace('_', ' ')}
+      </Badge>
+    );
+  };
+
+  const getKYCStatusBadge = (status: string) => {
+    const variants = {
+      approved: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
+      pending: 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300',
+      rejected: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300',
+      under_review: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
+    };
+    
+    return (
+      <Badge variant="secondary" className={variants[status as keyof typeof variants]}>
+        {status.replace('_', ' ')}
+      </Badge>
+    );
+  };
+
+  const summaryCards = [
+    { 
+      title: 'Total Clients', 
+      value: clients.length.toString(), 
+      change: '+12.5%',
+      changeType: 'positive',
+      icon: Users,
+      gradient: 'from-primary to-chart-2'
+    },
+    { 
+      title: 'Active Clients', 
+      value: clients.filter(c => c.status === 'active').length.toString(), 
+      change: '+8.3%',
+      changeType: 'positive',
+      icon: CheckCircle,
+      gradient: 'from-green-500 to-green-600'
+    },
+    { 
+      title: 'High Risk Clients', 
+      value: clients.filter(c => c.riskScore > 70).length.toString(), 
+      change: '-2.1%',
+      changeType: 'positive',
+      icon: AlertTriangle,
+      gradient: 'from-red-500 to-red-600'
+    },
+  ];
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-muted-foreground">Loading clients...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-gray-900 mb-2">Client Management</h1>
-          <p className="text-gray-600">Manage and monitor all registered clients</p>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Client Profiles</h1>
+          <p className="text-muted-foreground">Unified view of client KYC/KYB data, transactions, and risk assessment</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline">
-            <Filter className="w-4 h-4 mr-2" />
-            Filters
-          </Button>
           <Button variant="outline">
             <Download className="w-4 h-4 mr-2" />
             Export
@@ -121,52 +179,45 @@ export function ClientsView() {
         </div>
       </div>
 
-      <Card>
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {summaryCards.map((card) => {
+          const Icon = card.icon;
+          const TrendIcon = card.changeType === 'positive' ? TrendingUp : TrendingDown;
+          return (
+            <Card key={card.title} className="relative overflow-hidden hover:shadow-lg transition-all duration-200 border-border">
+              <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${card.gradient}`} />
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm text-muted-foreground">{card.title}</CardTitle>
+                <Icon className="w-5 h-5 text-primary" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-foreground mb-1">{card.value}</div>
+                <div className="flex items-center gap-1">
+                  <TrendIcon className={`w-3 h-3 ${card.changeType === 'positive' ? 'text-green-600' : 'text-red-600'}`} />
+                  <span className={`text-xs ${card.changeType === 'positive' ? 'text-green-600' : 'text-red-600'}`}>
+                    {card.change}
+                  </span>
+                  <span className="text-xs text-muted-foreground">vs last month</span>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
+      <Card className="border-border">
         <CardHeader>
           <div className="flex items-center gap-4">
             <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
                 type="text"
-                placeholder="Search clients..."
+                placeholder="Search by name, email, or company..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6366F1] focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-input rounded-lg bg-input-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
               />
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant={activeFilter === 'all' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setActiveFilter('all')}
-                className={activeFilter === 'all' ? 'bg-gradient-to-r from-[#6366F1] to-[#8B5CF6]' : ''}
-              >
-                All
-              </Button>
-              <Button
-                variant={activeFilter === 'active' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setActiveFilter('active')}
-                className={activeFilter === 'active' ? 'bg-gradient-to-r from-[#6366F1] to-[#8B5CF6]' : ''}
-              >
-                Active
-              </Button>
-              <Button
-                variant={activeFilter === 'inactive' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setActiveFilter('inactive')}
-                className={activeFilter === 'inactive' ? 'bg-gradient-to-r from-[#6366F1] to-[#8B5CF6]' : ''}
-              >
-                Inactive
-              </Button>
-              <Button
-                variant={activeFilter === 'pending' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setActiveFilter('pending')}
-                className={activeFilter === 'pending' ? 'bg-gradient-to-r from-[#6366F1] to-[#8B5CF6]' : ''}
-              >
-                Pending
-              </Button>
             </div>
           </div>
         </CardHeader>
@@ -174,41 +225,48 @@ export function ClientsView() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
+                <TableHead>Client Name</TableHead>
+                <TableHead>Company</TableHead>
                 <TableHead>Email</TableHead>
-                <TableHead>Country</TableHead>
-                <TableHead>Business Type</TableHead>
+                <TableHead>KYC Status</TableHead>
+                <TableHead>KYB Status</TableHead>
+                <TableHead>Risk Score</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Action</TableHead>
+                <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredClients.map((client) => (
-                <TableRow key={client.id} className="hover:bg-gray-50 cursor-pointer">
+                <TableRow key={client.id} className="hover:bg-muted/50 border-border">
+                  <TableCell className="font-medium text-foreground">{client.name}</TableCell>
+                  <TableCell className="text-muted-foreground">{client.companyName}</TableCell>
+                  <TableCell className="text-muted-foreground">{client.email}</TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#6366F1] to-[#8B5CF6] flex items-center justify-center">
-                        <Building2 className="w-4 h-4 text-white" />
-                      </div>
-                      <span>{client.name}</span>
+                    <div className="flex items-center gap-2">
+                      {getStatusIcon(client.kycStatus)}
+                      {getKYCStatusBadge(client.kycStatus)}
                     </div>
                   </TableCell>
-                  <TableCell className="text-gray-600">{client.email}</TableCell>
-                  <TableCell>{client.country}</TableCell>
-                  <TableCell>{client.businessType}</TableCell>
                   <TableCell>
-                    <Badge
-                      variant="secondary"
-                      className={
-                        client.status === 'active'
-                          ? 'bg-green-100 text-green-700'
-                          : client.status === 'inactive'
-                          ? 'bg-gray-100 text-gray-700'
-                          : 'bg-orange-100 text-orange-700'
-                      }
-                    >
-                      {client.status}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      {getStatusIcon(client.kybStatus)}
+                      {getKYBStatusBadge(client.kybStatus)}
+                      </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <div className={`w-2 h-2 rounded-full ${
+                        client.riskScore < 30 ? 'bg-green-500' : 
+                        client.riskScore < 70 ? 'bg-orange-500' : 'bg-red-500'
+                      }`} />
+                      <span className="text-sm">{client.riskScore}%</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      {getStatusIcon(client.status)}
+                      {getStatusBadge(client.status)}
+                    </div>
                   </TableCell>
                   <TableCell>
                     <Button
@@ -217,7 +275,7 @@ export function ClientsView() {
                       onClick={() => setSelectedClient(client)}
                     >
                       <Eye className="w-4 h-4 mr-2" />
-                      View
+                      View Profile
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -227,178 +285,453 @@ export function ClientsView() {
         </CardContent>
       </Card>
 
-      {/* Client Details Drawer */}
-      <Sheet open={!!selectedClient} onOpenChange={() => setSelectedClient(null)}>
-        <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
+      {/* Client Profile Modal */}
+      <Dialog open={!!selectedClient} onOpenChange={() => setSelectedClient(null)}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <User className="w-5 h-5" />
+              Client Profile - {selectedClient?.name}
+            </DialogTitle>
+          </DialogHeader>
           {selectedClient && (
-            <>
-              <SheetHeader>
-                <SheetTitle>Client Profile</SheetTitle>
-              </SheetHeader>
-              <div className="mt-6 space-y-6">
-                <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#6366F1] to-[#8B5CF6] flex items-center justify-center">
-                    <Building2 className="w-8 h-8 text-white" />
+            <div className="space-y-6">
+              <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <TabsList className="grid w-full grid-cols-5">
+                  <TabsTrigger value="overview">Overview</TabsTrigger>
+                  <TabsTrigger value="kyc">KYC Data</TabsTrigger>
+                  <TabsTrigger value="kyb">KYB Data</TabsTrigger>
+                  <TabsTrigger value="transactions">Transactions</TabsTrigger>
+                  <TabsTrigger value="accounts">Bank Accounts</TabsTrigger>
+                </TabsList>
+
+                {/* Overview Tab */}
+                <TabsContent value="overview" className="space-y-6">
+                  {/* Client Information */}
+                  <Card className="border-border">
+                    <CardHeader>
+                      <CardTitle className="text-lg">Client Information</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-2 gap-6">
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-3">
+                            <User className="w-5 h-5 text-primary" />
+                            <div>
+                              <div className="text-sm text-muted-foreground">Full Name</div>
+                              <div className="text-foreground font-medium">{selectedClient.name}</div>
+                            </div>
                   </div>
+                          <div className="flex items-center gap-3">
+                            <Mail className="w-5 h-5 text-primary" />
                   <div>
-                    <h3 className="text-gray-900">{selectedClient.name}</h3>
-                    <p className="text-sm text-gray-600">{selectedClient.email}</p>
+                              <div className="text-sm text-muted-foreground">Email</div>
+                              <div className="text-foreground">{selectedClient.email}</div>
                   </div>
                 </div>
-
-                <Tabs defaultValue="details">
-                  <TabsList className="w-full grid grid-cols-3">
-                    <TabsTrigger value="details">Details</TabsTrigger>
-                    <TabsTrigger value="dd">Ongoing DD</TabsTrigger>
-                    <TabsTrigger value="notes">Notes</TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="details" className="space-y-4 mt-4">
+                          <div className="flex items-center gap-3">
+                            <Phone className="w-5 h-5 text-primary" />
                     <div>
-                      <div className="text-sm text-gray-600 mb-2">Edit Status</div>
-                      <Select defaultValue={selectedClient.status}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="active">Active</SelectItem>
-                          <SelectItem value="inactive">Inactive</SelectItem>
-                          <SelectItem value="pending">Pending Verification</SelectItem>
-                        </SelectContent>
-                      </Select>
+                              <div className="text-sm text-muted-foreground">Phone</div>
+                              <div className="text-foreground">{selectedClient.phone}</div>
+                            </div>
+                          </div>
                     </div>
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-3">
+                            <Building2 className="w-5 h-5 text-primary" />
                     <div>
-                      <div className="text-sm text-gray-600 mb-1">Country</div>
-                      <div className="text-gray-900">{selectedClient.country}</div>
+                              <div className="text-sm text-muted-foreground">Company</div>
+                              <div className="text-foreground">{selectedClient.companyName}</div>
+                            </div>
                     </div>
+                          <div className="flex items-center gap-3">
+                            <Calendar className="w-5 h-5 text-primary" />
                     <div>
-                      <div className="text-sm text-gray-600 mb-1">Business Type</div>
-                      <div className="text-gray-900">{selectedClient.businessType}</div>
+                              <div className="text-sm text-muted-foreground">Joined</div>
+                              <div className="text-foreground">
+                                {format(new Date(selectedClient.joinedAt), 'dd/MM/yyyy')}
+                              </div>
+                            </div>
                     </div>
+                          <div className="flex items-center gap-3">
+                            <Globe className="w-5 h-5 text-primary" />
                     <div>
-                      <div className="text-sm text-gray-600 mb-1">Join Date</div>
-                      <div className="text-gray-900">{selectedClient.joinDate}</div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-gray-600 mb-1">Account Balance</div>
-                      <div className="text-gray-900">{selectedClient.accountBalance}</div>
-                    </div>
-                    <div className="pt-4 border-t border-gray-200 space-y-2">
-                      <Button className="w-full bg-gradient-to-r from-[#6366F1] to-[#8B5CF6]">
-                        <CheckCircle className="w-4 h-4 mr-2" />
-                        Activate Account
-                      </Button>
-                      <Button variant="outline" className="w-full text-red-600 border-red-200 hover:bg-red-50">
-                        <XCircle className="w-4 h-4 mr-2" />
-                        Suspend Account
-                      </Button>
-                    </div>
-                  </TabsContent>
-                  <TabsContent value="dd" className="mt-4">
-                    <div className="space-y-4">
-                      <div>
-                        <div className="text-sm text-gray-900 mb-3 flex items-center gap-2">
-                          <MessageSquare className="w-4 h-4" />
-                          Query & Reply Thread
+                              <div className="text-sm text-muted-foreground">Country</div>
+                              <div className="text-foreground">{selectedClient.country}</div>
+                            </div>
+                          </div>
                         </div>
-                        <ScrollArea className="h-[300px] border border-gray-200 rounded-lg p-3">
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Risk Assessment */}
+                  <Card className="border-border">
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Shield className="w-5 h-5 text-primary" />
+                        Risk Assessment
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-3 gap-6">
+                        <div className="text-center">
+                          <div className="text-3xl font-bold text-foreground mb-2">{selectedClient.riskScore}%</div>
+                          <div className="text-sm text-muted-foreground mb-2">Risk Score</div>
+                          {getRiskBadge(selectedClient.riskScore)}
+                        </div>
+                        <div className="text-center">
+                          <div className="text-3xl font-bold text-foreground mb-2">{selectedClient.totalTransactions}</div>
+                          <div className="text-sm text-muted-foreground mb-2">Total Transactions</div>
+                          <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+                            {selectedClient.totalTransactions > 100 ? 'High Volume' : 'Normal Volume'}
+                          </Badge>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-3xl font-bold text-foreground mb-2">
+                            {formatAmount(selectedClient.totalVolume, selectedClient.currency)}
+                          </div>
+                          <div className="text-sm text-muted-foreground mb-2">Total Volume</div>
+                          <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">
+                            {selectedClient.totalVolume > 1000000 ? 'High Value' : 'Standard Value'}
+                          </Badge>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Compliance Status */}
+                  <Card className="border-border">
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <CheckCircle className="w-5 h-5 text-primary" />
+                        Compliance Status
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-2 gap-6">
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-muted-foreground">KYC Status</span>
+                            <div className="flex items-center gap-2">
+                              {getStatusIcon(selectedClient.kycStatus)}
+                              {getKYCStatusBadge(selectedClient.kycStatus)}
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-muted-foreground">KYB Status</span>
+                            <div className="flex items-center gap-2">
+                              {getStatusIcon(selectedClient.kybStatus)}
+                              {getKYBStatusBadge(selectedClient.kybStatus)}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-muted-foreground">Account Status</span>
+                            <div className="flex items-center gap-2">
+                              {getStatusIcon(selectedClient.status)}
+                              {getStatusBadge(selectedClient.status)}
+                    </div>
+                    </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-muted-foreground">Last Activity</span>
+                            <span className="text-sm text-foreground">
+                              {format(new Date(selectedClient.lastActivity), 'dd/MM/yyyy HH:mm')}
+                            </span>
+                    </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                {/* KYC Data Tab */}
+                <TabsContent value="kyc" className="space-y-6">
+                  {selectedClient.kycData && (
+                    <>
+                      <Card className="border-border">
+                        <CardHeader>
+                          <CardTitle className="text-lg">Personal Information</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <div className="text-sm text-muted-foreground">Full Name</div>
+                              <div className="text-foreground font-medium">
+                                {selectedClient.kycData.firstName} {selectedClient.kycData.lastName}
+                              </div>
+                            </div>
+                            <div className="space-y-2">
+                              <div className="text-sm text-muted-foreground">Date of Birth</div>
+                              <div className="text-foreground">{selectedClient.kycData.dateOfBirth}</div>
+                            </div>
+                            <div className="space-y-2">
+                              <div className="text-sm text-muted-foreground">Nationality</div>
+                              <div className="text-foreground">{selectedClient.kycData.nationality}</div>
+                            </div>
+                            <div className="space-y-2">
+                              <div className="text-sm text-muted-foreground">ID Number</div>
+                              <div className="text-foreground font-mono">{selectedClient.kycData.idNumber}</div>
+                            </div>
+                            <div className="col-span-2 space-y-2">
+                              <div className="text-sm text-muted-foreground">Address</div>
+                              <div className="text-foreground">{selectedClient.kycData.address}</div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <Card className="border-border">
+                        <CardHeader>
+                          <CardTitle className="text-lg">Documents</CardTitle>
+                        </CardHeader>
+                        <CardContent>
                           <div className="space-y-3">
-                            {ongoingDDQueries.map((query) => (
+                            {selectedClient.kycData.documents.map((doc) => (
                               <div
-                                key={query.id}
-                                className={`p-3 rounded-lg ${
-                                  query.from === 'Admin'
-                                    ? 'bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] text-white ml-4'
-                                    : 'bg-gray-100 text-gray-900 mr-4'
-                                }`}
+                                key={doc.id}
+                                className="flex items-center justify-between p-3 bg-muted/50 rounded-lg border border-border"
                               >
-                                <div className="flex items-start justify-between mb-1">
-                                  <span className="text-xs opacity-90">{query.from}</span>
+                                <div className="flex items-center gap-3">
+                                  <FileText className="w-5 h-5 text-primary" />
+                                  <div>
+                                    <div className="text-sm font-medium text-foreground capitalize">
+                                      {doc.type.replace('_', ' ')}
+                                    </div>
                                   <Badge
                                     variant="secondary"
                                     className={
-                                      query.status === 'pending'
-                                        ? 'bg-orange-200 text-orange-900 text-xs'
-                                        : query.status === 'replied'
-                                        ? 'bg-blue-200 text-blue-900 text-xs'
-                                        : 'bg-green-200 text-green-900 text-xs'
-                                    }
-                                  >
-                                    {query.status}
+                                        doc.status === 'verified' ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' :
+                                        doc.status === 'rejected' ? 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300' :
+                                        'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300'
+                                      }
+                                    >
+                                      {doc.status}
                                   </Badge>
+                                  </div>
                                 </div>
-                                <p className="text-sm">{query.message}</p>
-                                <p className="text-xs opacity-70 mt-1">{query.date}</p>
+                                <Button variant="ghost" size="sm">
+                                  <Download className="w-4 h-4" />
+                                </Button>
                               </div>
                             ))}
                           </div>
-                        </ScrollArea>
+                        </CardContent>
+                      </Card>
+                    </>
+                  )}
+                </TabsContent>
+
+                {/* KYB Data Tab */}
+                <TabsContent value="kyb" className="space-y-6">
+                  {selectedClient.kybData && (
+                    <>
+                      <Card className="border-border">
+                        <CardHeader>
+                          <CardTitle className="text-lg">Company Information</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <div className="text-sm text-muted-foreground">Company Name</div>
+                              <div className="text-foreground font-medium">{selectedClient.kybData.companyName}</div>
+                            </div>
+                            <div className="space-y-2">
+                              <div className="text-sm text-muted-foreground">Registration Number</div>
+                              <div className="text-foreground font-mono">{selectedClient.kybData.registrationNumber}</div>
+                            </div>
+                            <div className="space-y-2">
+                              <div className="text-sm text-muted-foreground">Business Type</div>
+                              <div className="text-foreground">{selectedClient.kybData.businessType}</div>
+                            </div>
+                            <div className="space-y-2">
+                              <div className="text-sm text-muted-foreground">Incorporation Date</div>
+                              <div className="text-foreground">{selectedClient.kybData.incorporationDate}</div>
+                            </div>
+                            <div className="col-span-2 space-y-2">
+                              <div className="text-sm text-muted-foreground">Business Address</div>
+                              <div className="text-foreground">{selectedClient.kybData.businessAddress}</div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <Card className="border-border">
+                        <CardHeader>
+                          <CardTitle className="text-lg">Directors & UBOs</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-4">
+                            <div>
+                              <div className="text-sm text-muted-foreground mb-2">Directors</div>
+                              <div className="space-y-2">
+                                {selectedClient.kybData.directors.map((director, idx) => (
+                                  <div key={idx} className="p-3 bg-muted/50 rounded-lg border border-border">
+                                    <div className="grid grid-cols-3 gap-4">
+                                      <div>
+                                        <div className="text-sm text-muted-foreground">Name</div>
+                                        <div className="text-foreground font-medium">{director.name}</div>
+                                      </div>
+                                      <div>
+                                        <div className="text-sm text-muted-foreground">Position</div>
+                                        <div className="text-foreground">{director.position}</div>
                       </div>
                       <div>
-                        <label className="text-sm text-gray-600 mb-2 block">
-                          Raise New Query
-                        </label>
-                        <Textarea
-                          placeholder="Type your query or request additional information..."
-                          rows={3}
-                          value={newQuery}
-                          onChange={(e) => setNewQuery(e.target.value)}
-                        />
-                        <Button className="w-full mt-2 bg-gradient-to-r from-[#6366F1] to-[#8B5CF6]">
-                          <Send className="w-4 h-4 mr-2" />
-                          Send Query
-                        </Button>
+                                        <div className="text-sm text-muted-foreground">Ownership</div>
+                                        <div className="text-foreground font-medium">{director.ownership}%</div>
+                                      </div>
+                                    </div>
                       </div>
-                      <div className="flex gap-2 pt-4 border-t border-gray-200">
-                        <Button className="flex-1 bg-green-600 hover:bg-green-700 text-white">
-                          <CheckCircle className="w-4 h-4 mr-2" />
-                          Approve DD
-                        </Button>
-                        <Button variant="outline" className="flex-1 text-red-600 border-red-200 hover:bg-red-50">
-                          <XCircle className="w-4 h-4 mr-2" />
-                          Reject DD
-                        </Button>
+                                ))}
                       </div>
                     </div>
-                  </TabsContent>
-                  <TabsContent value="notes" className="mt-4">
-                    <div className="space-y-4">
+                            <div>
+                              <div className="text-sm text-muted-foreground mb-2">Ultimate Beneficial Owners</div>
+                              <div className="space-y-2">
+                                {selectedClient.kybData.ubos.map((ubo, idx) => (
+                                  <div key={idx} className="p-3 bg-muted/50 rounded-lg border border-border">
+                                    <div className="grid grid-cols-3 gap-4">
+                                      <div>
+                                        <div className="text-sm text-muted-foreground">Name</div>
+                                        <div className="text-foreground font-medium">{ubo.name}</div>
+                                      </div>
                       <div>
-                        <label className="text-sm text-gray-600 mb-2 block">
-                          Compliance Notes
-                        </label>
-                        <Textarea
-                          placeholder="Add internal compliance notes..."
-                          rows={6}
-                          defaultValue="KYC approved on 2024-03-15. All documents verified."
-                        />
+                                        <div className="text-sm text-muted-foreground">Ownership</div>
+                                        <div className="text-foreground font-medium">{ubo.ownership}%</div>
                       </div>
                       <div>
-                        <label className="text-sm text-gray-600 mb-2 block">
-                          Internal Remarks
-                        </label>
-                        <Textarea
-                          placeholder="Add general remarks..."
-                          rows={4}
-                          defaultValue="Regular transactions. No flags."
-                        />
+                                        <div className="text-sm text-muted-foreground">Nationality</div>
+                                        <div className="text-foreground">{ubo.nationality}</div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </>
+                  )}
+                </TabsContent>
+
+                {/* Transactions Tab */}
+                <TabsContent value="transactions" className="space-y-6">
+                  <Card className="border-border">
+                    <CardHeader>
+                      <CardTitle className="text-lg">Transaction History</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ScrollArea className="h-[400px]">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Transaction ID</TableHead>
+                              <TableHead>Date</TableHead>
+                              <TableHead>Amount</TableHead>
+                              <TableHead>Type</TableHead>
+                              <TableHead>Status</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {clientTransactions.map((tx) => (
+                              <TableRow key={tx.id} className="hover:bg-muted/50 border-border">
+                                <TableCell className="text-primary font-semibold">{tx.id}</TableCell>
+                                <TableCell className="text-muted-foreground">
+                                  {format(new Date(tx.timestamp), 'dd/MM/yyyy HH:mm')}
+                                </TableCell>
+                                <TableCell className="text-foreground font-semibold">
+                                  {formatAmount(tx.amount, tx.currency)}
+                                </TableCell>
+                                <TableCell>
+                                  <Badge variant="secondary" className="bg-muted text-muted-foreground">
+                                    {tx.type}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex items-center gap-2">
+                                    {getStatusIcon(tx.status)}
+                                    {getStatusBadge(tx.status)}
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </ScrollArea>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                {/* Bank Accounts Tab */}
+                <TabsContent value="accounts" className="space-y-6">
+                  <Card className="border-border">
+                    <CardHeader>
+                      <CardTitle className="text-lg">Bank Account Details</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        {selectedClient.bankAccounts.map((account) => (
+                          <div key={account.id} className="p-4 bg-muted/50 rounded-lg border border-border">
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <div className="flex items-center gap-2">
+                                  <CreditCard className="w-4 h-4 text-primary" />
+                                  <div className="text-sm text-muted-foreground">Account Number</div>
+                                </div>
+                                <div className="text-foreground font-mono">{account.accountNumber}</div>
+                              </div>
+                              <div className="space-y-2">
+                                <div className="flex items-center gap-2">
+                                  <Building2 className="w-4 h-4 text-primary" />
+                                  <div className="text-sm text-muted-foreground">Bank Name</div>
+                                </div>
+                                <div className="text-foreground">{account.bankName}</div>
+                              </div>
+                              <div className="space-y-2">
+                                <div className="flex items-center gap-2">
+                                  <Globe className="w-4 h-4 text-primary" />
+                                  <div className="text-sm text-muted-foreground">Currency</div>
+                                </div>
+                                <div className="text-foreground">{account.currency}</div>
+                              </div>
+                              <div className="space-y-2">
+                                <div className="flex items-center gap-2">
+                                  <MapPin className="w-4 h-4 text-primary" />
+                                  <div className="text-sm text-muted-foreground">Country</div>
+                                </div>
+                                <div className="text-foreground">{account.country}</div>
+                              </div>
+                            </div>
+                            <div className="mt-3 pt-3 border-t border-border">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <div className="text-sm text-muted-foreground">Status</div>
+                                  {getStatusBadge(account.status)}
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <div className="text-sm text-muted-foreground">Verified</div>
+                                  {account.verified ? (
+                                    <CheckCircle className="w-4 h-4 text-green-600" />
+                                  ) : (
+                                    <XCircle className="w-4 h-4 text-red-600" />
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                      <Button className="w-full bg-gradient-to-r from-[#6366F1] to-[#8B5CF6]">
-                        Save Notes
-                      </Button>
-                    </div>
+                    </CardContent>
+                  </Card>
                   </TabsContent>
                 </Tabs>
-
-                <div className="pt-4 border-t border-gray-200 space-y-2">
-                  <Button variant="outline" className="w-full">
-                    View Transaction History
-                  </Button>
-                </div>
               </div>
-            </>
           )}
-        </SheetContent>
-      </Sheet>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -1,229 +1,534 @@
 import { useState } from 'react';
-import { Card, CardContent } from './ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
-import { Textarea } from './ui/textarea';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { ScrollArea } from './ui/scroll-area';
-import { Switch } from './ui/switch';
-import { Search, Send, Mail } from 'lucide-react';
-
-const conversations = [
-  {
-    id: 1,
-    client: 'Acme Corporation Ltd',
-    lastMessage: 'Thank you for the update on our KYC status',
-    time: '10m ago',
-    unread: 2,
-    status: 'active',
-  },
-  {
-    id: 2,
-    client: 'TechVentures Inc',
-    lastMessage: 'We have uploaded the requested documents',
-    time: '1h ago',
-    unread: 0,
-    status: 'active',
-  },
-  {
-    id: 3,
-    client: 'Global Imports LLC',
-    lastMessage: 'Can you clarify the transaction flag?',
-    time: '3h ago',
-    unread: 1,
-    status: 'flagged',
-  },
-  {
-    id: 4,
-    client: 'Innovation Hub Ltd',
-    lastMessage: 'All information has been verified',
-    time: '1d ago',
-    unread: 0,
-    status: 'resolved',
-  },
-];
-
-const messages = [
-  {
-    id: 1,
-    sender: 'client',
-    content: 'Hello, I wanted to check on the status of our KYC application.',
-    timestamp: '2025-10-13 09:15',
-  },
-  {
-    id: 2,
-    sender: 'admin',
-    content: 'Thank you for reaching out. Your application is currently under review by our compliance team.',
-    timestamp: '2025-10-13 09:22',
-  },
-  {
-    id: 3,
-    sender: 'client',
-    content: 'How long does the review process typically take?',
-    timestamp: '2025-10-13 09:25',
-  },
-  {
-    id: 4,
-    sender: 'admin',
-    content: 'The review process typically takes 2-3 business days. We will notify you once completed.',
-    timestamp: '2025-10-13 09:30',
-  },
-  {
-    id: 5,
-    sender: 'client',
-    content: 'Thank you for the update on our KYC status',
-    timestamp: '2025-10-13 14:22',
-  },
-];
+import { Textarea } from './ui/textarea';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { 
+  Search, 
+  Send, 
+  MessageSquare, 
+  User, 
+  Clock,
+  CheckCircle,
+  AlertTriangle,
+  Filter,
+  Plus,
+  Reply,
+  Forward,
+  Archive,
+  Flag,
+  Star,
+  Mail,
+  Phone,
+  Calendar,
+  FileText,
+  Paperclip,
+  Eye,
+  EyeOff,
+  TrendingUp,
+  TrendingDown
+} from 'lucide-react';
+import { 
+  useMessages,
+  useSendMessage,
+  useMarkAsRead,
+  useArchiveMessage,
+  type Message,
+  type MessageThread 
+} from '../lib/api-hooks';
+import { format } from 'date-fns';
 
 export function MessagesView() {
-  const [selectedConversation, setSelectedConversation] = useState(conversations[0]);
-  const [messageText, setMessageText] = useState('');
-  const [sendViaEmail, setSendViaEmail] = useState(false);
+  const [selectedThread, setSelectedThread] = useState<MessageThread | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [priorityFilter, setPriorityFilter] = useState<string>('all');
+  const [newMessage, setNewMessage] = useState('');
+  const [replyMessage, setReplyMessage] = useState('');
 
-  const filteredConversations = conversations.filter((conv) =>
-    conv.client.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const { data: threads = [], isLoading } = useMessages();
+  const sendMessage = useSendMessage();
+  const markAsRead = useMarkAsRead();
+  const archiveMessage = useArchiveMessage();
+
+  const filteredThreads = threads.filter((thread) => {
+    const matchesSearch = 
+      thread.clientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      thread.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      thread.lastMessage.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesStatus = statusFilter === 'all' || thread.status === statusFilter;
+    const matchesPriority = priorityFilter === 'all' || thread.priority === priorityFilter;
+    
+    return matchesSearch && matchesStatus && matchesPriority;
+  });
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'read': return <CheckCircle className="w-4 h-4 text-green-600" />;
+      case 'unread': return <MessageSquare className="w-4 h-4 text-blue-600" />;
+      case 'replied': return <Reply className="w-4 h-4 text-orange-600" />;
+      case 'archived': return <Archive className="w-4 h-4 text-gray-600" />;
+      default: return <Clock className="w-4 h-4 text-orange-600" />;
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    const variants = {
+      unread: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
+      read: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
+      replied: 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300',
+      archived: 'bg-gray-100 text-gray-700 dark:bg-gray-900 dark:text-gray-300'
+    };
+    
+    return (
+      <Badge variant="secondary" className={variants[status as keyof typeof variants]}>
+        {status}
+      </Badge>
+    );
+  };
+
+  const getPriorityBadge = (priority: string) => {
+    const variants = {
+      low: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
+      medium: 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300',
+      high: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300',
+      urgent: 'bg-red-200 text-red-800 dark:bg-red-800 dark:text-red-200'
+    };
+    
+    return (
+      <Badge variant="secondary" className={variants[priority as keyof typeof variants]}>
+        {priority}
+      </Badge>
+    );
+  };
+
+  const getPriorityIcon = (priority: string) => {
+    switch (priority) {
+      case 'urgent': return <AlertTriangle className="w-4 h-4 text-red-600" />;
+      case 'high': return <Flag className="w-4 h-4 text-red-500" />;
+      case 'medium': return <Clock className="w-4 h-4 text-orange-500" />;
+      default: return <CheckCircle className="w-4 h-4 text-green-500" />;
+    }
+  };
+
+  const summaryCards = [
+    { 
+      title: 'Total Messages', 
+      value: threads.length.toString(), 
+      change: '+15.2%',
+      changeType: 'positive',
+      icon: MessageSquare,
+      gradient: 'from-primary to-chart-2'
+    },
+    { 
+      title: 'Unread Messages', 
+      value: threads.filter(t => t.status === 'unread').length.toString(), 
+      change: '-8.3%',
+      changeType: 'positive',
+      icon: EyeOff,
+      gradient: 'from-blue-500 to-blue-600'
+    },
+    { 
+      title: 'High Priority', 
+      value: threads.filter(t => t.priority === 'high' || t.priority === 'urgent').length.toString(), 
+      change: '+2.1%',
+      changeType: 'negative',
+      icon: AlertTriangle,
+      gradient: 'from-red-500 to-red-600'
+    },
+  ];
+
+  const handleSendMessage = () => {
+    if (selectedThread && newMessage.trim()) {
+      sendMessage.mutate({
+        threadId: selectedThread.id,
+        content: newMessage,
+        priority: 'medium'
+      });
+      setNewMessage('');
+    }
+  };
+
+  const handleReply = () => {
+    if (selectedThread && replyMessage.trim()) {
+      sendMessage.mutate({
+        threadId: selectedThread.id,
+        content: replyMessage,
+        priority: 'medium',
+        isReply: true
+      });
+      setReplyMessage('');
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-muted-foreground">Loading messages...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
+      <div className="flex items-center justify-between">
       <div>
-        <h1 className="text-gray-900 mb-2">Communication Center</h1>
-        <p className="text-gray-600">Manage client communications and support requests</p>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Communication Center</h1>
+          <p className="text-muted-foreground">Manage admin-client communication and message threads</p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline">
+            <Filter className="w-4 h-4 mr-2" />
+            Filters
+          </Button>
+          <Button className="bg-gradient-to-r from-primary to-chart-2 hover:opacity-90">
+            <Plus className="w-4 h-4 mr-2" />
+            New Message
+          </Button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-250px)]">
-        {/* Conversations List */}
-        <Card className="overflow-hidden">
-          <CardContent className="p-0">
-            <div className="p-4 border-b border-gray-200">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {summaryCards.map((card) => {
+          const Icon = card.icon;
+          const TrendIcon = card.changeType === 'positive' ? TrendingUp : TrendingDown;
+          return (
+            <Card key={card.title} className="relative overflow-hidden hover:shadow-lg transition-all duration-200 border-border">
+              <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${card.gradient}`} />
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm text-muted-foreground">{card.title}</CardTitle>
+                <Icon className="w-5 h-5 text-primary" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-foreground mb-1">{card.value}</div>
+                <div className="flex items-center gap-1">
+                  <TrendIcon className={`w-3 h-3 ${card.changeType === 'positive' ? 'text-green-600' : 'text-red-600'}`} />
+                  <span className={`text-xs ${card.changeType === 'positive' ? 'text-green-600' : 'text-red-600'}`}>
+                    {card.change}
+                  </span>
+                  <span className="text-xs text-muted-foreground">vs last week</span>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
+      <Card className="border-border">
+        <CardHeader>
+          <div className="flex items-center gap-4">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <input
                   type="text"
-                  placeholder="Search conversations..."
+                placeholder="Search messages, clients, or subjects..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6366F1] focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-input rounded-lg bg-input-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
                 />
-              </div>
             </div>
-            <ScrollArea className="h-[calc(100%-73px)]">
-              <div className="divide-y divide-gray-200">
-                {filteredConversations.map((conv) => (
-                  <button
-                    key={conv.id}
-                    onClick={() => setSelectedConversation(conv)}
-                    className={`w-full p-4 text-left hover:bg-gray-50 transition-colors ${
-                      selectedConversation.id === conv.id ? 'bg-[#F8F9FB] border-l-4 border-[#6366F1]' : ''
-                    }`}
-                  >
-                    <div className="flex items-start justify-between mb-1">
-                      <span className="text-sm text-gray-900">{conv.client}</span>
-                      {conv.unread > 0 && (
-                        <Badge variant="secondary" className="bg-[#6366F1] text-white text-xs">
-                          {conv.unread}
-                        </Badge>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-32">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="unread">Unread</SelectItem>
+                <SelectItem value="read">Read</SelectItem>
+                <SelectItem value="replied">Replied</SelectItem>
+                <SelectItem value="archived">Archived</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+              <SelectTrigger className="w-32">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Priority</SelectItem>
+                <SelectItem value="urgent">Urgent</SelectItem>
+                <SelectItem value="high">High</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="low">Low</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Client</TableHead>
+                <TableHead>Subject</TableHead>
+                <TableHead>Last Message</TableHead>
+                <TableHead>Priority</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredThreads.map((thread) => (
+                <TableRow key={thread.id} className="hover:bg-muted/50 border-border">
+                  <TableCell className="font-medium text-foreground">{thread.clientName}</TableCell>
+                  <TableCell className="text-muted-foreground">{thread.subject}</TableCell>
+                  <TableCell className="text-muted-foreground max-w-xs truncate">
+                    {thread.lastMessage}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      {getPriorityIcon(thread.priority)}
+                      {getPriorityBadge(thread.priority)}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      {getStatusIcon(thread.status)}
+                      {getStatusBadge(thread.status)}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {format(new Date(thread.lastActivity), 'dd/MM/yyyy HH:mm')}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedThread(thread)}
+                      >
+                        <Eye className="w-4 h-4 mr-2" />
+                        View
+                      </Button>
+                      {thread.status === 'unread' && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => markAsRead.mutate({ threadId: thread.id })}
+                        >
+                          <CheckCircle className="w-4 h-4" />
+                        </Button>
                       )}
                     </div>
-                    <p className="text-xs text-gray-500 truncate mb-1">{conv.lastMessage}</p>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-400">{conv.time}</span>
-                      <Badge
-                        variant="secondary"
-                        className={
-                          conv.status === 'flagged'
-                            ? 'bg-red-100 text-red-700 text-xs'
-                            : conv.status === 'resolved'
-                            ? 'bg-green-100 text-green-700 text-xs'
-                            : 'bg-gray-100 text-gray-700 text-xs'
-                        }
-                      >
-                        {conv.status}
-                      </Badge>
-                    </div>
-                  </button>
+                  </TableCell>
+                </TableRow>
                 ))}
-              </div>
-            </ScrollArea>
+            </TableBody>
+          </Table>
           </CardContent>
         </Card>
 
-        {/* Chat Thread */}
-        <Card className="lg:col-span-2 flex flex-col overflow-hidden">
-          <div className="p-4 border-b border-gray-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-gray-900">{selectedConversation.client}</h3>
-                <p className="text-xs text-gray-500">Last active: {selectedConversation.time}</p>
+      {/* Message Thread Modal */}
+      <Dialog open={!!selectedThread} onOpenChange={() => setSelectedThread(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <MessageSquare className="w-5 h-5" />
+              Message Thread - {selectedThread?.clientName}
+            </DialogTitle>
+          </DialogHeader>
+          {selectedThread && (
+            <div className="space-y-6">
+              {/* Thread Header */}
+              <Card className="border-border">
+                <CardContent className="pt-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <User className="w-4 h-4 text-muted-foreground" />
+                        <Label className="text-sm text-muted-foreground">Client</Label>
+                      </div>
+                      <div className="text-foreground font-medium">{selectedThread.clientName}</div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Mail className="w-4 h-4 text-muted-foreground" />
+                        <Label className="text-sm text-muted-foreground">Subject</Label>
+                      </div>
+                      <div className="text-foreground">{selectedThread.subject}</div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-muted-foreground" />
+                        <Label className="text-sm text-muted-foreground">Created</Label>
+                      </div>
+                      <div className="text-foreground">
+                        {format(new Date(selectedThread.createdAt), 'dd/MM/yyyy HH:mm')}
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-muted-foreground" />
+                        <Label className="text-sm text-muted-foreground">Last Activity</Label>
+                      </div>
+                      <div className="text-foreground">
+                        {format(new Date(selectedThread.lastActivity), 'dd/MM/yyyy HH:mm')}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-4 pt-4 border-t border-border">
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-2">
+                        <Label className="text-sm text-muted-foreground">Priority</Label>
+                        <div className="flex items-center gap-2">
+                          {getPriorityIcon(selectedThread.priority)}
+                          {getPriorityBadge(selectedThread.priority)}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Label className="text-sm text-muted-foreground">Status</Label>
+                        <div className="flex items-center gap-2">
+                          {getStatusIcon(selectedThread.status)}
+                          {getStatusBadge(selectedThread.status)}
+                        </div>
               </div>
-              <Badge
-                variant="secondary"
-                className={
-                  selectedConversation.status === 'flagged'
-                    ? 'bg-red-100 text-red-700'
-                    : selectedConversation.status === 'resolved'
-                    ? 'bg-green-100 text-green-700'
-                    : 'bg-gray-100 text-gray-700'
-                }
-              >
-                {selectedConversation.status}
+                      <div className="flex items-center gap-2">
+                        <Label className="text-sm text-muted-foreground">Messages</Label>
+                        <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+                          {selectedThread.messageCount}
               </Badge>
             </div>
           </div>
+                  </div>
+                </CardContent>
+              </Card>
 
-          <ScrollArea className="flex-1 p-4">
+              {/* Messages */}
+              <Card className="border-border">
+                <CardHeader>
+                  <CardTitle className="text-lg">Message History</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ScrollArea className="h-[400px] border border-border rounded-lg p-4">
             <div className="space-y-4">
-              {messages.map((message) => (
+                      {selectedThread.messages.map((message) => (
                 <div
                   key={message.id}
-                  className={`flex ${message.sender === 'admin' ? 'justify-end' : 'justify-start'}`}
-                >
-                  <div
-                    className={`max-w-[70%] rounded-lg p-3 ${
+                          className={`p-4 rounded-lg ${
                       message.sender === 'admin'
-                        ? 'bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] text-white'
-                        : 'bg-gray-100 text-gray-900'
-                    }`}
-                  >
-                    <p className="text-sm">{message.content}</p>
-                    <p
-                      className={`text-xs mt-1 ${
-                        message.sender === 'admin' ? 'text-white/70' : 'text-gray-500'
-                      }`}
-                    >
-                      {message.timestamp}
-                    </p>
+                              ? 'bg-primary text-primary-foreground ml-8'
+                              : 'bg-muted text-foreground mr-8'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium">
+                                {message.sender === 'admin' ? 'Admin' : selectedThread.clientName}
+                              </span>
+                              {message.priority === 'high' && (
+                                <Flag className="w-3 h-3 text-red-300" />
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs opacity-70">
+                                {format(new Date(message.timestamp), 'dd/MM/yyyy HH:mm')}
+                              </span>
+                              {message.read && (
+                                <CheckCircle className="w-3 h-3 opacity-70" />
+                              )}
+                            </div>
+                          </div>
+                          <div className="text-sm whitespace-pre-wrap">{message.content}</div>
+                          {message.attachments && message.attachments.length > 0 && (
+                            <div className="mt-2 pt-2 border-t border-white/20">
+                              <div className="flex items-center gap-2">
+                                <Paperclip className="w-3 h-3" />
+                                <span className="text-xs">
+                                  {message.attachments.length} attachment(s)
+                                </span>
                   </div>
+                            </div>
+                          )}
                 </div>
               ))}
             </div>
           </ScrollArea>
+                </CardContent>
+              </Card>
 
-          <div className="p-4 border-t border-gray-200 space-y-3">
+              {/* Reply Section */}
+              <Card className="border-border">
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Reply className="w-5 h-5 text-primary" />
+                    Reply to Client
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="reply-message">Your Message</Label>
+                      <Textarea
+                        id="reply-message"
+                        placeholder="Type your reply to the client..."
+                        rows={4}
+                        value={replyMessage}
+                        onChange={(e) => setReplyMessage(e.target.value)}
+                      />
+                    </div>
+                    <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <Switch checked={sendViaEmail} onCheckedChange={setSendViaEmail} />
-              <Mail className="w-4 h-4 text-gray-600" />
-              <span className="text-sm text-gray-600">Send via Email (SMTP/SendGrid)</span>
+                        <Label className="text-sm text-muted-foreground">Priority</Label>
+                        <Select defaultValue="medium">
+                          <SelectTrigger className="w-32">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="low">Low</SelectItem>
+                            <SelectItem value="medium">Medium</SelectItem>
+                            <SelectItem value="high">High</SelectItem>
+                            <SelectItem value="urgent">Urgent</SelectItem>
+                          </SelectContent>
+                        </Select>
             </div>
-            <div className="flex gap-2">
-              <Textarea
-                placeholder="Type your message..."
-                value={messageText}
-                onChange={(e) => setMessageText(e.target.value)}
-                rows={3}
-                className="flex-1"
-              />
               <Button
-                className="bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] h-auto"
-                onClick={() => setMessageText('')}
+                        onClick={handleReply}
+                        disabled={sendMessage.isPending || !replyMessage.trim()}
+                        className="bg-gradient-to-r from-primary to-chart-2 hover:opacity-90"
               >
-                <Send className="w-4 h-4" />
+                        <Send className="w-4 h-4 mr-2" />
+                        {sendMessage.isPending ? 'Sending...' : 'Send Reply'}
               </Button>
             </div>
           </div>
+                </CardContent>
         </Card>
+
+              {/* Quick Actions */}
+              <div className="flex gap-3 pt-4 border-t border-border">
+                <Button variant="outline" onClick={() => setSelectedThread(null)} className="flex-1">
+                  Close
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => archiveMessage.mutate({ threadId: selectedThread.id })}
+                  disabled={archiveMessage.isPending}
+                  className="flex-1"
+                >
+                  <Archive className="w-4 h-4 mr-2" />
+                  {archiveMessage.isPending ? 'Archiving...' : 'Archive Thread'}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => markAsRead.mutate({ threadId: selectedThread.id })}
+                  disabled={markAsRead.isPending}
+                  className="flex-1"
+                >
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  {markAsRead.isPending ? 'Marking...' : 'Mark as Read'}
+                </Button>
+              </div>
       </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
