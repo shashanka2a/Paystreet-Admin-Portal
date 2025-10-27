@@ -103,8 +103,8 @@ export function AuditLogView() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-gray-900 mb-2">Audit Log</h1>
-          <p className="text-gray-600">Complete history of system activities and changes</p>
+          <h1 className="text-2xl font-bold text-foreground mb-2">Audit Log</h1>
+          <p className="text-muted-foreground">Complete history of system activities and changes</p>
         </div>
         <Button variant="outline">
           <Download className="w-4 h-4 mr-2" />
@@ -115,42 +115,42 @@ export function AuditLogView() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm text-gray-600">Total Actions</CardTitle>
-            <Activity className="w-5 h-5 text-[#6366F1]" />
+            <CardTitle className="text-sm text-muted-foreground">Total Actions</CardTitle>
+            <Activity className="w-5 h-5 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-gray-900">1,247</div>
-            <p className="text-xs text-gray-500 mt-1">Last 24 hours</p>
+            <div className="text-2xl font-bold text-foreground">1,247</div>
+            <p className="text-xs text-muted-foreground mt-1">Last 24 hours</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm text-gray-600">Successful</CardTitle>
+            <CardTitle className="text-sm text-muted-foreground">Successful</CardTitle>
             <Activity className="w-5 h-5 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-gray-900">1,189</div>
-            <p className="text-xs text-gray-500 mt-1">95.3% success rate</p>
+            <div className="text-2xl font-bold text-foreground">1,189</div>
+            <p className="text-xs text-muted-foreground mt-1">95.3% success rate</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm text-gray-600">Warnings</CardTitle>
+            <CardTitle className="text-sm text-muted-foreground">Warnings</CardTitle>
             <Activity className="w-5 h-5 text-orange-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-gray-900">47</div>
-            <p className="text-xs text-gray-500 mt-1">Requires attention</p>
+            <div className="text-2xl font-bold text-foreground">47</div>
+            <p className="text-xs text-muted-foreground mt-1">Requires attention</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm text-gray-600">Failed</CardTitle>
+            <CardTitle className="text-sm text-muted-foreground">Failed</CardTitle>
             <Activity className="w-5 h-5 text-red-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-gray-900">11</div>
-            <p className="text-xs text-gray-500 mt-1">System errors</p>
+            <div className="text-2xl font-bold text-foreground">11</div>
+            <p className="text-xs text-muted-foreground mt-1">System errors</p>
           </CardContent>
         </Card>
       </div>
@@ -159,7 +159,7 @@ export function AuditLogView() {
         <CardHeader>
           <div className="flex items-center gap-4">
             <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 placeholder="Search audit logs..."
                 className="pl-10"
@@ -184,41 +184,41 @@ export function AuditLogView() {
               {auditLogs.map((log) => (
                 <div
                   key={log.id}
-                  className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                  className="p-4 bg-muted/50 rounded-lg hover:bg-muted transition-colors border border-border"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
+                      <div className="flex items-center gap-3 mb-3">
                         <Badge
                           variant="secondary"
                           className={
                             log.status === 'success'
-                              ? 'bg-green-100 text-green-700'
+                              ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
                               : log.status === 'warning'
-                              ? 'bg-orange-100 text-orange-700'
-                              : 'bg-blue-100 text-blue-700'
+                              ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400'
+                              : 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400'
                           }
                         >
                           {log.status}
                         </Badge>
-                        <span className="text-sm text-gray-900">{log.action}</span>
+                        <span className="text-sm font-medium text-foreground">{log.action}</span>
                       </div>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs text-gray-600">
-                        <div>
-                          <span className="text-gray-500">User:</span> {log.user}
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+                        <div className="text-muted-foreground">
+                          <span className="font-medium text-foreground">User:</span> {log.user}
                         </div>
-                        <div>
-                          <span className="text-gray-500">Target:</span> {log.target}
+                        <div className="text-muted-foreground">
+                          <span className="font-medium text-foreground">Target:</span> {log.target}
                         </div>
-                        <div>
-                          <span className="text-gray-500">IP:</span> {log.ipAddress}
+                        <div className="text-muted-foreground">
+                          <span className="font-medium text-foreground">IP:</span> {log.ipAddress}
                         </div>
-                        <div>
-                          <span className="text-gray-500">Time:</span> {log.timestamp}
+                        <div className="text-muted-foreground">
+                          <span className="font-medium text-foreground">Time:</span> {log.timestamp}
                         </div>
                       </div>
                     </div>
-                    <Button variant="ghost" size="sm">
+                    <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
                       Details
                     </Button>
                   </div>
