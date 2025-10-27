@@ -212,7 +212,7 @@ export function DashboardView() {
             <CardTitle className="text-foreground">Quick Actions</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <Button className="w-full bg-gradient-to-r from-primary to-chart-2 hover:opacity-90 transition-opacity">
+            <Button className="w-full bg-gradient-to-r from-primary to-chart-2 hover:opacity-90 text-white hover:text-white transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl">
               <UserCheck className="w-4 h-4 mr-2" />
               Approve KYC
             </Button>

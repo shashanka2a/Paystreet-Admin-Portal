@@ -428,7 +428,7 @@ export function KYCView() {
                 <Button 
                   onClick={handleApprove}
                   disabled={approveKYC.isPending}
-                  className="bg-gradient-to-r from-primary to-chart-2 hover:opacity-90"
+                  className="bg-gradient-to-r from-primary to-chart-2 hover:opacity-90 text-white hover:text-white transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl"
                 >
                   {approveKYC.isPending ? 'Approving...' : 'Approve'}
                 </Button>

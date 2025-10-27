@@ -585,7 +585,7 @@ export function TransactionsView() {
                       Reject
                     </Button>
                     <Button 
-                      className="flex-1 bg-gradient-to-r from-primary to-chart-2 hover:opacity-90" 
+                      className="flex-1 bg-gradient-to-r from-primary to-chart-2 hover:opacity-90 text-white hover:text-white transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl" 
                       onClick={() => {
                         // In real implementation, this would call Wallex API to approve transaction
                         console.log('Approving transaction:', selectedTransaction.id, newQuery);
