@@ -39,31 +39,46 @@ export function SettingsView() {
         <p className="text-muted-foreground">Configure system preferences, thresholds, and integrations</p>
       </div>
 
-      <Tabs defaultValue="general">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="general">
-            <Settings className="w-4 h-4 mr-2" />
+      <Tabs defaultValue="general" className="w-full">
+        <TabsList className="grid w-full grid-cols-5 gap-1 p-1 bg-muted/50 rounded-lg">
+          <TabsTrigger 
+            value="general" 
+            className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium transition-all duration-200 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+          >
+            <Settings className="w-4 h-4" />
             General
           </TabsTrigger>
-          <TabsTrigger value="email">
-            <Mail className="w-4 h-4 mr-2" />
+          <TabsTrigger 
+            value="email" 
+            className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium transition-all duration-200 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+          >
+            <Mail className="w-4 h-4" />
             Email Templates
           </TabsTrigger>
-          <TabsTrigger value="thresholds">
-            <DollarSign className="w-4 h-4 mr-2" />
+          <TabsTrigger 
+            value="thresholds" 
+            className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium transition-all duration-200 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+          >
+            <DollarSign className="w-4 h-4" />
             Thresholds
           </TabsTrigger>
-          <TabsTrigger value="notifications">
-            <Bell className="w-4 h-4 mr-2" />
+          <TabsTrigger 
+            value="notifications" 
+            className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium transition-all duration-200 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+          >
+            <Bell className="w-4 h-4" />
             Notifications
           </TabsTrigger>
-          <TabsTrigger value="security">
-            <Shield className="w-4 h-4 mr-2" />
+          <TabsTrigger 
+            value="security" 
+            className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium transition-all duration-200 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+          >
+            <Shield className="w-4 h-4" />
             Security
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="general" className="space-y-6 mt-6">
+        <TabsContent value="general" className="space-y-6 mt-8">
           <Card className="border-border">
             <CardHeader>
               <CardTitle className="text-foreground">Platform Information</CardTitle>
@@ -96,7 +111,7 @@ export function SettingsView() {
                 />
               </div>
               <Button 
-                className="bg-gradient-to-r from-primary to-chart-2 hover:opacity-90 transition-opacity"
+                className="bg-gradient-to-r from-primary to-chart-2 hover:opacity-90 text-white hover:text-white transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl font-semibold"
                 disabled={isLoading}
               >
                 {isLoading ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
@@ -178,7 +193,7 @@ export function SettingsView() {
                 />
               </div>
               <Button 
-                className="bg-gradient-to-r from-primary to-chart-2 hover:opacity-90 transition-opacity"
+                className="bg-gradient-to-r from-primary to-chart-2 hover:opacity-90 text-white hover:text-white transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl font-semibold"
                 disabled={isLoading}
               >
                 {isLoading ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
@@ -213,7 +228,7 @@ export function SettingsView() {
                 />
               </div>
               <Button 
-                className="bg-gradient-to-r from-primary to-chart-2 hover:opacity-90 transition-opacity"
+                className="bg-gradient-to-r from-primary to-chart-2 hover:opacity-90 text-white hover:text-white transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl font-semibold"
                 disabled={isLoading}
               >
                 {isLoading ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
@@ -265,7 +280,7 @@ export function SettingsView() {
                 />
               </div>
               <Button 
-                className="bg-gradient-to-r from-primary to-chart-2 hover:opacity-90 transition-opacity"
+                className="bg-gradient-to-r from-primary to-chart-2 hover:opacity-90 text-white hover:text-white transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl font-semibold"
                 disabled={isLoading}
               >
                 {isLoading ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
@@ -308,7 +323,7 @@ export function SettingsView() {
                 />
               </div>
               <Button 
-                className="bg-gradient-to-r from-primary to-chart-2 hover:opacity-90 transition-opacity"
+                className="bg-gradient-to-r from-primary to-chart-2 hover:opacity-90 text-white hover:text-white transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl font-semibold"
                 disabled={isLoading}
               >
                 {isLoading ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
@@ -411,7 +426,7 @@ export function SettingsView() {
                 <Switch />
               </div>
               <Button 
-                className="bg-gradient-to-r from-primary to-chart-2 hover:opacity-90 transition-opacity"
+                className="bg-gradient-to-r from-primary to-chart-2 hover:opacity-90 text-white hover:text-white transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl font-semibold"
                 disabled={isLoading}
               >
                 {isLoading ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
@@ -451,7 +466,7 @@ export function SettingsView() {
                 />
               </div>
               <Button 
-                className="bg-gradient-to-r from-primary to-chart-2 hover:opacity-90 transition-opacity"
+                className="bg-gradient-to-r from-primary to-chart-2 hover:opacity-90 text-white hover:text-white transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl font-semibold"
                 disabled={isLoading}
               >
                 {isLoading ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
