@@ -184,24 +184,24 @@ export function AuditLogView() {
               {auditLogs.map((log) => (
                 <div
                   key={log.id}
-                  className="p-4 bg-muted/50 rounded-lg hover:bg-muted transition-colors border border-border"
+                  className="p-4 bg-muted/50 rounded-lg hover:bg-muted hover:shadow-md hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 border border-border cursor-pointer group"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-3">
                         <Badge
                           variant="secondary"
-                          className={
+                          className={`group-hover:scale-105 transition-transform duration-200 ${
                             log.status === 'success'
-                              ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+                              ? 'bg-green-100 text-green-900 dark:bg-green-900/30 dark:text-green-200 font-semibold'
                               : log.status === 'warning'
-                              ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400'
-                              : 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400'
-                          }
+                              ? 'bg-orange-100 text-orange-900 dark:bg-orange-900/30 dark:text-orange-200 font-semibold'
+                              : 'bg-blue-100 text-blue-900 dark:bg-blue-900/30 dark:text-blue-200 font-semibold'
+                          }`}
                         >
                           {log.status}
                         </Badge>
-                        <span className="text-sm font-medium text-foreground">{log.action}</span>
+                        <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors duration-200">{log.action}</span>
                       </div>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
                         <div className="text-muted-foreground">
@@ -218,7 +218,7 @@ export function AuditLogView() {
                         </div>
                       </div>
                     </div>
-                    <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+                    <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground hover:bg-primary/10 group-hover:scale-105 transition-all duration-200">
                       Details
                     </Button>
                   </div>

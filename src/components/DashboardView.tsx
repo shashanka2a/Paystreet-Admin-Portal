@@ -126,23 +126,23 @@ export function DashboardView() {
           return (
             <Card
               key={kpi.title}
-              className="relative overflow-hidden hover:shadow-lg transition-all duration-200 border-border"
+              className="relative overflow-hidden hover:shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 border-border cursor-pointer group"
             >
-              <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${kpi.gradient}`} />
+              <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${kpi.gradient} group-hover:h-2 transition-all duration-300`} />
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm text-muted-foreground">{kpi.title}</CardTitle>
-                <Icon className="w-5 h-5 text-primary" />
+                <CardTitle className="text-sm text-muted-foreground group-hover:text-foreground transition-colors duration-200">{kpi.title}</CardTitle>
+                <Icon className="w-5 h-5 text-primary group-hover:scale-110 group-hover:rotate-3 transition-all duration-200" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-foreground mb-1">{kpi.value}</div>
+                <div className="text-2xl font-bold text-foreground mb-1 group-hover:text-primary transition-colors duration-200">{kpi.value}</div>
                 <div className="flex items-center gap-1 mb-1">
-                  <TrendIcon className={`w-3 h-3 ${kpi.changeType === 'positive' ? 'text-green-600' : 'text-red-600'}`} />
-                  <span className={`text-xs ${kpi.changeType === 'positive' ? 'text-green-600' : 'text-red-600'}`}>
+                  <TrendIcon className={`w-3 h-3 ${kpi.changeType === 'positive' ? 'text-green-600' : 'text-red-600'} group-hover:scale-110 transition-transform duration-200`} />
+                  <span className={`text-xs ${kpi.changeType === 'positive' ? 'text-green-600' : 'text-red-600'} group-hover:font-semibold transition-all duration-200`}>
                     {kpi.change}
                   </span>
-                  <span className="text-xs text-muted-foreground">vs last month</span>
+                  <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors duration-200">vs last month</span>
                 </div>
-                <p className="text-xs text-muted-foreground">{kpi.description}</p>
+                <p className="text-xs text-muted-foreground group-hover:text-foreground transition-colors duration-200">{kpi.description}</p>
               </CardContent>
             </Card>
           );
@@ -165,11 +165,11 @@ export function DashboardView() {
               {alerts.map((alert) => (
                 <div
                   key={alert.id}
-                  className="flex items-start justify-between p-4 bg-muted/50 rounded-lg hover:bg-muted transition-colors cursor-pointer border border-border"
+                  className="flex items-start justify-between p-4 bg-muted/50 rounded-lg hover:bg-muted hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer border border-border group"
                 >
                   <div className="flex items-start gap-3">
                     <AlertTriangle
-                      className={`w-5 h-5 mt-0.5 ${
+                      className={`w-5 h-5 mt-0.5 group-hover:scale-110 group-hover:rotate-6 transition-all duration-200 ${
                         alert.status === 'flagged'
                           ? 'text-red-500'
                           : alert.status === 'pending'
@@ -188,13 +188,13 @@ export function DashboardView() {
                   <div className="flex flex-col items-end gap-2">
                     <Badge
                       variant="secondary"
-                      className={
+                      className={`group-hover:scale-105 transition-transform duration-200 ${
                         alert.status === 'flagged'
                           ? 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300'
                           : alert.status === 'pending'
                           ? 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300'
                           : 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
-                      }
+                      }`}
                     >
                       {alert.status}
                     </Badge>
