@@ -40,38 +40,38 @@ export function SettingsView() {
       </div>
 
       <Tabs defaultValue="general" className="w-full">
-        <TabsList className="grid w-full grid-cols-5 gap-1 p-1 bg-muted/50 rounded-lg">
+        <TabsList className="grid w-full grid-cols-5 gap-2 p-2 bg-muted/30 rounded-xl border border-border">
           <TabsTrigger 
             value="general" 
-            className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium transition-all duration-200 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+            className="flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-medium transition-all duration-200 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-md data-[state=active]:border data-[state=active]:border-border rounded-lg hover:bg-muted/50"
           >
             <Settings className="w-4 h-4" />
             General
           </TabsTrigger>
           <TabsTrigger 
             value="email" 
-            className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium transition-all duration-200 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+            className="flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-medium transition-all duration-200 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-md data-[state=active]:border data-[state=active]:border-border rounded-lg hover:bg-muted/50"
           >
             <Mail className="w-4 h-4" />
             Email Templates
           </TabsTrigger>
           <TabsTrigger 
             value="thresholds" 
-            className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium transition-all duration-200 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+            className="flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-medium transition-all duration-200 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-md data-[state=active]:border data-[state=active]:border-border rounded-lg hover:bg-muted/50"
           >
             <DollarSign className="w-4 h-4" />
             Thresholds
           </TabsTrigger>
           <TabsTrigger 
             value="notifications" 
-            className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium transition-all duration-200 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+            className="flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-medium transition-all duration-200 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-md data-[state=active]:border data-[state=active]:border-border rounded-lg hover:bg-muted/50"
           >
             <Bell className="w-4 h-4" />
             Notifications
           </TabsTrigger>
           <TabsTrigger 
             value="security" 
-            className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium transition-all duration-200 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+            className="flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-medium transition-all duration-200 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-md data-[state=active]:border data-[state=active]:border-border rounded-lg hover:bg-muted/50"
           >
             <Shield className="w-4 h-4" />
             Security
