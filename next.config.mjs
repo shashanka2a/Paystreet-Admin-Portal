@@ -24,6 +24,8 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
+  // Exclude scripts directory from Next.js compilation
+  pageExtensions: ['tsx', 'ts', 'jsx', 'js'],
   // Exclude scripts from ESLint
   eslint: {
     ignoreDuringBuilds: true,

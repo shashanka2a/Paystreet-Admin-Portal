@@ -1,4 +1,4 @@
-// File: /Users/shashankjagannatham/Downloads/Paystreet Admin Portal/app/page.tsx
+// File: /Users/shashank/Downloads/Paystreet-Admin-Portal/app/page.tsx
 import * as entry from '../../../app/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
