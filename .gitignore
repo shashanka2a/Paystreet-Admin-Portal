@@ -11,3 +11,8 @@ data/
 
 # Scripts directory (optional - uncomment if you don't want to track scripts)
 # scripts/
+.npm-cache
+.puppeteer
+.puppeteer_cache    
+.puppeteer-profile
+.next

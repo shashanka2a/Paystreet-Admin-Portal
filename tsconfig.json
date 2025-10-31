@@ -25,6 +25,12 @@
     "paths": {
       "@/*": [
         "./*"
+      ],
+      "utils/*": [
+        "src/utils/*"
+      ],
+      "utils": [
+        "src/utils/index.ts"
       ]
     },
     "incremental": true
@@ -36,6 +42,7 @@
     ".next/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "src/services/providers/awsSigV4.ts"
   ]
 }

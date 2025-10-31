@@ -378,32 +378,59 @@ export class WallexAdapter extends BaseProvider {
   // Transaction methods
   async getTransactions(filters?: any): Promise<Transaction[]> {
     await this.ensureAuthenticated() 
+    // Normalize pagination filters to Wallex format if caller uses page/limit
+    const params: any = { ...(filters || {}) }
+    if (params.page !== undefined || params.limit !== undefined) {
+      const page = params.page
+      const limit = params.limit
+      delete params.page
+      delete params.limit
+      if (page !== undefined) params['pagination[page]'] = page
+      if (limit !== undefined) params['pagination[limit]'] = limit
+    }
+    // Prefer v2 payments listing (documented) and map to Transaction
     try {
-      const response: any = await this.axiosInstance.get('/v2/transactions', {
-        params: filters
-      }) 
-
+      const response: any = await this.axiosInstance.get('/v2/payments', { params })
       const rows = (response?.data?.data) || (response?.data) || response
-      return rows.map((transaction: any) => ({
-        id: transaction.transactionId,
-        type: transaction.type,
-        status: transaction.status,
-        amount: transaction.amount,
-        currency: transaction.currency,
-        fee: transaction.fee,
-        totalAmount: transaction.totalAmount,
-        reference: transaction.reference,
-        description: transaction.description,
-        createdAt: transaction.createdAt,
-        updatedAt: transaction.updatedAt,
-        beneficiary: transaction.beneficiary
+      return rows.map((payment: any) => ({
+        id: payment.paymentId,
+        type: 'PAYMENT' as const,
+        status: payment.status,
+        amount: payment.amount,
+        currency: payment.currency,
+        fee: payment.fee,
+        totalAmount: payment.totalAmount,
+        reference: payment.reference,
+        description: payment.description,
+        createdAt: payment.createdAt,
+        updatedAt: payment.updatedAt,
+        beneficiary: payment.beneficiary
       })) 
-    } catch (error: any) {
-      if (error?.response?.status === 404) {
-        // Endpoint not available for this environment/account; return empty list gracefully
-        return []
+    } catch (primaryError: any) {
+      // Fallback to legacy /v2/transactions if available in this environment
+      try {
+        const response: any = await this.axiosInstance.get('/v2/transactions', { params }) 
+        const rows = (response?.data?.data) || (response?.data) || response
+        return rows.map((transaction: any) => ({
+          id: transaction.transactionId,
+          type: transaction.type,
+          status: transaction.status,
+          amount: transaction.amount,
+          currency: transaction.currency,
+          fee: transaction.fee,
+          totalAmount: transaction.totalAmount,
+          reference: transaction.reference,
+          description: transaction.description,
+          createdAt: transaction.createdAt,
+          updatedAt: transaction.updatedAt,
+          beneficiary: transaction.beneficiary
+        })) 
+      } catch (fallbackError: any) {
+        if (fallbackError?.response?.status === 404) {
+          return []
+        }
+        throw fallbackError
       }
-      throw error
     }
   }
 

@@ -39,7 +39,7 @@ Gaps (pre-MVP polish)
   - Lazy-loaded admin modules are wired and reachable under `/app/admin/*`.
 
 - **Dashboard Data Fetch (Functional, Needs hardening)**
-  - Dashboard aggregates counts from `/v2/users` and `/v2/transactions` via active provider axios instance.
+  - Dashboard aggregates counts from `/v2/users` and `/v2/payments` via active provider axios instance.
   - Uses pagination `totalEntries` for efficient count reads.
 
 - **UI (Usable)**

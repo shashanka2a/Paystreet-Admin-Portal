@@ -15,8 +15,7 @@ Reference: Wallex Partner API overview – https://docs.wallex.asia/docs/intro
 - Not working or restricted
   - `GET /v2/collections/accounts` – 400 NOT_AUTHORIZED
     - Likely permission/plan gating; now handled gracefully in code (returns empty array)
-  - `GET /v2/transactions` (and tried `/v2/transactions/list`, `/v2/transactions/search`) – 404 Not Found
-    - Endpoint path appears different for our tenant/environment; needs exact path from docs/account
+  - Transactions listing is via `GET /v2/payments` (per docs). Legacy `GET /v2/transactions` returns 404 in our env.
 
 - Legacy/SigV4 tests
   - v1-style SigV4 endpoints return 403/invalid token and are not used by the app. We did not migrate these; they are for reference only.
@@ -25,9 +24,8 @@ Reference: Wallex Partner API overview – https://docs.wallex.asia/docs/intro
 ### What We Need From Documentation/Account Setup
 To finalize integration and enable all checks to pass, we need:
 
-1) Exact v2 Transactions listing endpoint
-   - Confirm the correct route and any base path nuances for our environment (e.g. `/v2/transactions`, `/v2/payments/transactions`, `/v2/ledger/transactions`, etc.).
-   - Expected response shape (top-level `data` + `pagination`?) and query params (paging, date filters, status filters).
+1) Transactions listing endpoint is `GET /v2/payments`
+   - Confirm any required filters/pagination fields and response shape (top-level `data` + `pagination`).
 
 2) Collections Accounts permissions/scope
    - Required scopes/plan or feature flag for `GET /v2/collections/accounts`.

@@ -31,6 +31,7 @@
     "@radix-ui/react-tooltip": "^1.1.8",
     "@tanstack/react-query": "^5.90.5",
     "@types/bcryptjs": "^2.4.6",
+    "axios": "^1.7.7",
     "bcryptjs": "^3.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "*",
@@ -51,8 +52,7 @@
     "recharts": "^2.15.2",
     "sonner": "^2.0.3",
     "tailwind-merge": "*",
-    "vaul": "^1.1.2",
-    "axios": "^1.7.7"
+    "vaul": "^1.1.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.14",
@@ -61,6 +61,8 @@
     "eslint": "8.57.1",
     "eslint-config-next": "^14.2.10",
     "postcss": "^8.4.47",
+    "puppeteer": "^24.27.0",
+    "puppeteer-core": "^22.15.0",
     "tailwindcss": "^4.1.3",
     "typescript": "^5.6.3"
   },
@@ -71,8 +73,11 @@
     "fetch-wallex-data": "npx tsx scripts/fetch-wallex-data.ts.script",
     "fetch-wallex-data:js": "node scripts/fetch-wallex-data.js",
     "test-wallex-connection": "npx tsx scripts/test-wallex-connection.ts.script",
-      "wallex:test": "node scripts/wallex-test.js",
-      "wallex:sigv4": "node wallex-sigv4-test.js",
-      "wallex:v2": "node wallex-v2-test.js"
+    "wallex:test": "node scripts/wallex-test.js",
+    "wallex:sigv4": "node wallex-sigv4-test.js",
+    "wallex:v2": "node wallex-v2-test.js",
+    "docs:scrape": "node scripts/scrape-wallex-docs.js",
+    "docs:scrape:fetch": "node scripts/scrape-wallex-docs-fetch.js",
+    "docs:scrape:headless": "PUPPETEER_CACHE_DIR=.puppeteer node scripts/scrape-wallex-docs.js"
   }
 }

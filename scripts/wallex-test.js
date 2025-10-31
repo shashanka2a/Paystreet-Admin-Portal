@@ -24,10 +24,11 @@ const envFromDotEnv = loadDotEnvFile('.env')
 const envFromDotEnvLocal = loadDotEnvFile('.env.local')
 const getEnv = (k, def = '') => process.env[k] || envFromDotEnv[k] || envFromDotEnvLocal[k] || def
 
-const BASE_URL = getEnv('REACT_APP_WALLEX_BASE_URL', getEnv('NEXT_PUBLIC_WALLEX_BASE_URL', 'https://api-sg.wallex.plus'))
+const BASE_URL = getEnv('REACT_APP_WALLEX_BASE_URL', getEnv('NEXT_PUBLIC_WALLEX_BASE_URL', 'https://api.wallex.asia'))
 const API_KEY = getEnv('REACT_APP_WALLEX_API_KEY', getEnv('NEXT_PUBLIC_WALLEX_API_KEY', ''))
 const ACCESS_KEY_ID = getEnv('REACT_APP_WALLEX_ACCESS_KEY_ID', getEnv('NEXT_PUBLIC_WALLEX_ACCESS_KEY_ID', ''))
 const SECRET_ACCESS_KEY = getEnv('REACT_APP_WALLEX_SECRET_ACCESS_KEY', getEnv('NEXT_PUBLIC_WALLEX_SECRET_ACCESS_KEY', ''))
+const TX_PATH = getEnv('WALLEX_TRANSACTIONS_PATH', '/v2/payments')
 
 function redact(v, keep = 6) {
   if (!v) return ''
@@ -35,7 +36,7 @@ function redact(v, keep = 6) {
   return v.slice(0, keep) + '...' + '*'.repeat(Math.max(0, v.length - keep - 3))
 }
 
-async function fetchWithTimeout(url, options = {}, timeoutMs = 15000) {
+async function fetchWithTimeout(url, options = {}, timeoutMs = 20000) {
   const controller = new AbortController()
   const id = setTimeout(() => controller.abort(), timeoutMs)
   try {
@@ -47,106 +48,114 @@ async function fetchWithTimeout(url, options = {}, timeoutMs = 15000) {
     } else {
       data = await res.text()
     }
-    return { ok: res.ok, status: res.status, data }
+    return { ok: res.ok, status: res.status, statusText: res.statusText, data }
   } catch (e) {
-    return { ok: false, status: undefined, data: e.message || String(e) }
+    return { ok: false, status: undefined, statusText: 'ERROR', data: e.message || String(e) }
   } finally {
     clearTimeout(id)
   }
 }
 
 async function tryGet(pathname, headers = {}) {
-  return fetchWithTimeout(BASE_URL + pathname, { method: 'GET', headers }, 15000)
+  return fetchWithTimeout(BASE_URL + pathname, { method: 'GET', headers }, 20000)
 }
 
 async function tryPost(pathname, body, headers = {}) {
   return fetchWithTimeout(
     BASE_URL + pathname,
     { method: 'POST', headers, body: JSON.stringify(body) },
-    15000
+    20000
   )
 }
 
+async function authenticateV2() {
+  const headers = {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json',
+    'X-Api-Key': API_KEY,
+  }
+  const body = { accessKeyId: ACCESS_KEY_ID, secretAccessKey: SECRET_ACCESS_KEY }
+  const r = await tryPost('/v2/authenticate', body, headers)
+  if (!r.ok) throw new Error(`Auth failed: ${r.status} ${typeof r.data === 'string' ? r.data : JSON.stringify(r.data)}`)
+  const d = typeof r.data === 'string' ? {} : r.data
+  return d.token || d.accessToken
+}
+
+async function testCollections(token) {
+  const headers = {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json',
+    'X-Api-Key': API_KEY,
+    'Authorization': `Bearer ${token}`,
+  }
+  const qs = 'pagination[page]=1&pagination[limit]=20'
+  const r = await tryGet(`/v2/collections/accounts?${qs}`, headers)
+  if (r.ok) {
+    console.log(`✅ [GET /v2/collections/accounts] ->`, r.status, 'OK')
+    const d = typeof r.data === 'string' ? {} : r.data
+    const rows = Array.isArray(d?.data) ? d.data : Array.isArray(d) ? d : []
+    console.log('   count:', rows.length)
+  } else {
+    const body = typeof r.data === 'string' ? r.data : JSON.stringify(r.data)
+    if (r.status === 400 && body.includes('NOT_AUTHORIZED')) {
+      console.log('ℹ️  /v2/collections/accounts requires additional permissions. Skipping.')
+    } else {
+      console.log('❌ [GET /v2/collections/accounts] ->', r.status, r.statusText)
+      console.log('   details:', body)
+    }
+  }
+}
+
+async function testTransactions(token) {
+  const headers = {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json',
+    'X-Api-Key': API_KEY,
+    'Authorization': `Bearer ${token}`,
+  }
+  const candidates = [TX_PATH]
+  for (const p of candidates) {
+    const url = p.includes('?') ? p : `${p}?limit=10`
+    const r = await tryGet(url, headers)
+    if (r.ok) {
+      console.log(`✅ [GET ${url}] ->`, r.status, 'OK')
+      return true
+    }
+    if (r.status === 404) {
+      console.log(`↪︎  ${url} not found (404), trying next candidate`)
+      continue
+    }
+    console.log(`❌ [GET ${url}] ->`, r.status, r.statusText)
+    console.log('   details:', typeof r.data === 'string' ? r.data : JSON.stringify(r.data))
+    break
+  }
+  console.log('⚠️  No working transactions endpoint discovered. Set WALLEX_TRANSACTIONS_PATH in .env to override.')
+  return false
+}
+
 async function main() {
-  console.log('Wallex test start')
+  console.log('Wallex v2 test start')
   console.log('Base URL:', BASE_URL)
   console.log('X-Api-Key:', API_KEY ? redact(API_KEY) : '(none)')
   console.log('AccessKeyId:', ACCESS_KEY_ID ? redact(ACCESS_KEY_ID) : '(none)')
   console.log('SecretAccessKey:', SECRET_ACCESS_KEY ? redact(SECRET_ACCESS_KEY) : '(none)')
 
-  const commonHeaders = {
-    'Accept': 'application/json',
-    'Content-Type': 'application/json',
-  }
-  if (API_KEY) commonHeaders['X-Api-Key'] = API_KEY
-
-  // 1) Try simple public/status-like endpoints
-  const candidates = ['/v1/status', '/status', '/v1/ping', '/ping', '/v1/health', '/health', '/v1/version', '/version']
-  for (const p of candidates) {
-    const r = await tryGet(p, commonHeaders)
-    console.log(`[GET ${p}] ->`, r.status, r.ok ? 'OK' : 'FAIL')
-    if (!r.ok && r.data) console.log('  details:', typeof r.data === 'string' ? r.data : JSON.stringify(r.data))
+  if (!API_KEY || !ACCESS_KEY_ID || !SECRET_ACCESS_KEY) {
+    console.log('Missing credentials. Please set API key, accessKeyId, and secretAccessKey.')
+    process.exit(1)
   }
 
-  // Try with X-Api-Key in different header names
-  const apiKeyHeaders = [
-    { ...commonHeaders, 'X-Api-Key': API_KEY },
-    { ...commonHeaders, 'X-API-Key': API_KEY },
-    { ...commonHeaders, 'Authorization': `Bearer ${API_KEY}` },
-    { ...commonHeaders, 'Authorization': `ApiKey ${API_KEY}` },
-    { ...commonHeaders, 'X-Auth-Token': API_KEY },
-  ]
-  
-  for (const headers of apiKeyHeaders) {
-    const r = await tryGet('/v1/status', headers)
-    console.log(`[GET /v1/status with ${Object.keys(headers).filter(k => k !== 'Accept' && k !== 'Content-Type').join(',')}] ->`, r.status, r.ok ? 'OK' : 'FAIL')
-    if (r.ok) {
-      console.log('  SUCCESS! Found working auth method')
-      break
-    }
-  }
-
-  // 2) Try Wallex authentication endpoint as per official docs
-  const authEndpoint = '/users/v1/authenticate'
-  const authBody = { accessKeyId: ACCESS_KEY_ID, secretAccessKey: SECRET_ACCESS_KEY }
-  const authHeaders = {
-    ...commonHeaders,
-    'X-Api-Key': API_KEY
-  }
   let token = ''
-  if (ACCESS_KEY_ID && SECRET_ACCESS_KEY && API_KEY) {
-    const r = await tryPost(authEndpoint, authBody, authHeaders)
-    console.log(`[POST ${authEndpoint}] ->`, r.status, r.ok ? 'OK' : 'FAIL')
-    if (!r.ok && r.data) console.log('  details:', typeof r.data === 'string' ? r.data : JSON.stringify(r.data))
-    if (r.ok) {
-      const d = typeof r.data === 'string' ? {} : r.data
-      token = d?.token || d?.access_token || d?.accessToken
-      console.log('  SUCCESS! Received token:', token ? redact(token) : 'No token in response')
-    }
-  } else {
-    console.log('Missing credentials for authentication')
+  try {
+    token = await authenticateV2()
+    console.log('✅ Authenticated via /v2/authenticate:', token ? redact(token) : '(no token)')
+  } catch (e) {
+    console.error('❌ Authentication error:', e.message)
+    process.exit(1)
   }
 
-  if (token) {
-    console.log('Testing protected endpoints with token...')
-    const protectedHeaders = { 
-      ...commonHeaders, 
-      'X-Api-Key': API_KEY,
-      'Authorization': `Bearer ${token}` 
-    }
-    const protectedCandidates = ['/users/v1/balances', '/users/v1/accounts', '/users/v1/rates', '/collections/v1', '/payments/v1']
-    for (const p of protectedCandidates) {
-      const r = await tryGet(p, protectedHeaders)
-      console.log(`[GET ${p} with token] ->`, r.status, r.ok ? 'OK' : 'FAIL')
-      if (!r.ok && r.data) console.log('  details:', typeof r.data === 'string' ? r.data : JSON.stringify(r.data))
-      else if (r.ok) {
-        const d = typeof r.data === 'string' ? { body: r.data } : r.data
-        console.log('  keys:', Object.keys(d || {}))
-      }
-    }
-  } else {
-    console.log('No token obtained. Check credentials and try again.')
-  }
+  await testCollections(token)
+  await testTransactions(token)
 
   console.log('Wallex test done')
 }

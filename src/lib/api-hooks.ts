@@ -220,50 +220,14 @@ export const useKYBApplications = () => {
 };
 
 // Transaction API Hooks
-export const useTransactions = () => {
+export const useTransactions = (params?: any) => {
   return useQuery({
-    queryKey: ['transactions'],
-    queryFn: async (): Promise<Transaction[]> => {
-      // Placeholder API call - replace with actual Wallex integration
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      return [
-        {
-          id: 'txn-1',
-          clientId: 'client-1',
-          clientName: 'John Doe',
-          amount: 5000,
-          currency: 'USD',
-          type: 'incoming',
-          status: 'flagged',
-          timestamp: '2024-01-15T16:30:00Z',
-          description: 'Wire transfer from overseas',
-          riskScore: 85,
-          wallexData: {
-            transactionId: 'wallex-123',
-            exchangeRate: 1.0,
-            fees: 25
-          }
-        },
-        {
-          id: 'txn-2',
-          clientId: 'client-2',
-          clientName: 'Jane Smith',
-          amount: 2500,
-          currency: 'EUR',
-          type: 'outgoing',
-          status: 'approved',
-          timestamp: '2024-01-15T14:20:00Z',
-          description: 'Payment to supplier',
-          riskScore: 15,
-          wallexData: {
-            transactionId: 'wallex-124',
-            exchangeRate: 0.85,
-            fees: 12.50
-          }
-        }
-      ];
+    queryKey: ['transactions', params],
+    queryFn: async (): Promise<any[]> => {
+      return await wallexService.getTransactions(params);
     },
-    staleTime: 2 * 60 * 1000, // 2 minutes for real-time updates
+    staleTime: 2 * 60 * 1000,
+    refetchInterval: 5 * 60 * 1000,
   });
 };
 
@@ -645,126 +609,31 @@ export interface SystemSetting {
   updatedAt: string;
 }
 
-// Client API Hooks
+// Client API Hooks (map Wallex Beneficiaries as "clients" for now)
 export const useClients = () => {
   return useQuery({
     queryKey: ['clients'],
     queryFn: async (): Promise<Client[]> => {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      return [
-        {
-          id: 'client-1',
-          name: 'John Doe',
-          email: 'john.doe@email.com',
-          phone: '+1234567890',
-          companyName: 'Doe Enterprises',
-          country: 'United States',
-          status: 'active',
-          kycStatus: 'approved',
-          kybStatus: 'pending',
-          createdAt: '2024-01-01T00:00:00Z',
-          joinedAt: '2024-01-01T00:00:00Z',
-          lastActivity: '2024-01-15T10:30:00Z',
-          riskScore: 25,
-          totalTransactions: 15,
-          totalVolume: 50000,
-          currency: 'USD',
-          kycData: {
-            firstName: 'John',
-            lastName: 'Doe',
-            dateOfBirth: '1990-01-01',
-            nationality: 'US',
-            idNumber: '123456789',
-            address: '123 Main St, City, Country',
-            documents: [
-              { id: 'doc-1', type: 'passport', url: '/documents/passport-1.pdf', status: 'verified' },
-              { id: 'doc-2', type: 'utility_bill', url: '/documents/bill-1.pdf', status: 'pending' }
-            ]
-          },
-          kybData: {
-            companyName: 'Doe Enterprises',
-            registrationNumber: 'REG123456789',
-            businessType: 'Corporation',
-            incorporationDate: '2020-01-01',
-            businessAddress: '123 Business St, City, Country',
-            directors: [
-              { name: 'John Doe', position: 'CEO', ownership: 100 }
-            ],
-            ubos: [
-              { name: 'John Doe', ownership: 100, nationality: 'US' }
-            ]
-          },
-          bankAccounts: [
-            {
-              id: 'bank-1',
-              accountNumber: '****1234',
-              bankName: 'Chase Bank',
-              accountType: 'Checking',
-              currency: 'USD',
-              balance: 25000,
-              status: 'active',
-              country: 'United States',
-              verified: true
-            }
-          ]
-        },
-        {
-          id: 'client-2',
-          name: 'Jane Smith',
-          email: 'jane.smith@email.com',
-          phone: '+1987654321',
-          companyName: 'Smith & Co',
-          country: 'United Kingdom',
-          status: 'active',
-          kycStatus: 'under_review',
-          kybStatus: 'approved',
-          createdAt: '2024-01-02T00:00:00Z',
-          joinedAt: '2024-01-02T00:00:00Z',
-          lastActivity: '2024-01-14T14:20:00Z',
-          riskScore: 65,
-          totalTransactions: 8,
-          totalVolume: 25000,
-          currency: 'GBP',
-          kycData: {
-            firstName: 'Jane',
-            lastName: 'Smith',
-            dateOfBirth: '1985-05-15',
-            nationality: 'UK',
-            idNumber: '987654321',
-            address: '456 Oak Ave, Town, Country',
-            documents: [
-              { id: 'doc-3', type: 'drivers_license', url: '/documents/license-1.pdf', status: 'verified' },
-              { id: 'doc-4', type: 'bank_statement', url: '/documents/statement-1.pdf', status: 'rejected' }
-            ]
-          },
-          kybData: {
-            companyName: 'Smith & Co',
-            registrationNumber: 'REG987654321',
-            businessType: 'LLC',
-            incorporationDate: '2018-06-15',
-            businessAddress: '456 Business Ave, Town, Country',
-            directors: [
-              { name: 'Jane Smith', position: 'Managing Director', ownership: 100 }
-            ],
-            ubos: [
-              { name: 'Jane Smith', ownership: 100, nationality: 'UK' }
-            ]
-          },
-          bankAccounts: [
-            {
-              id: 'bank-2',
-              accountNumber: '****5678',
-              bankName: 'Barclays Bank',
-              accountType: 'Business',
-              currency: 'GBP',
-              balance: 15000,
-              status: 'active',
-              country: 'United Kingdom',
-              verified: true
-            }
-          ]
-        }
-      ];
+      const beneficiaries = await wallexService.getBeneficiaries();
+      // Map minimal fields to Client shape; other fields default
+      return beneficiaries.map((b: any) => ({
+        id: b.id,
+        name: b.name || b.email || 'Beneficiary',
+        email: b.email || '',
+        phone: b.phone || '',
+        companyName: b.bankName || '—',
+        country: b.country || '—',
+        status: 'active',
+        kycStatus: 'approved',
+        kybStatus: 'approved',
+        createdAt: b.createdAt || new Date().toISOString(),
+        joinedAt: b.createdAt || new Date().toISOString(),
+        lastActivity: b.lastUsed || b.createdAt || new Date().toISOString(),
+        riskScore: 0,
+        totalTransactions: 0,
+        totalVolume: 0,
+        currency: b.currency || 'USD',
+      }))
     },
     staleTime: 5 * 60 * 1000,
   });
@@ -773,31 +642,14 @@ export const useClients = () => {
 export const useClientTransactions = (clientId: string) => {
   return useQuery({
     queryKey: ['client-transactions', clientId],
-    queryFn: async (): Promise<Transaction[]> => {
+    queryFn: async (): Promise<any[]> => {
       if (!clientId) return [];
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      return [
-        {
-          id: 'txn-1',
-          clientId,
-          clientName: 'Client Name',
-          amount: 5000,
-          currency: 'USD',
-          type: 'incoming',
-          status: 'approved',
-          timestamp: '2024-01-15T16:30:00Z',
-          description: 'Wire transfer',
-          riskScore: 25,
-          wallexData: {
-            transactionId: 'wallex-123',
-            exchangeRate: 1.0,
-            fees: 25
-          }
-        }
-      ];
+      const all = await wallexService.getTransactions({ limit: 200 });
+      return all.filter((t: any) => t?.beneficiary?.id === clientId || t?.beneficiaryId === clientId);
     },
     enabled: !!clientId,
     staleTime: 2 * 60 * 1000,
+    refetchInterval: 5 * 60 * 1000,
   });
 };
 
