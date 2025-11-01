@@ -15,111 +15,95 @@ import {
   Clock,
   CheckCircle
 } from 'lucide-react';
+import { useWallexBalances, useWallexTransactions, useWallexBeneficiaries } from '../lib/api-hooks';
 
-const kpiCards = [
-  {
-    title: 'Total Clients',
-    value: '2,847',
-    change: '+12.5%',
-    changeType: 'positive',
-    icon: Users,
-    gradient: 'from-primary to-chart-2',
-    description: 'Active client accounts'
-  },
-  {
-    title: 'Pending KYCs',
-    value: '47',
-    change: '-8.3%',
-    changeType: 'positive',
-    icon: UserCheck,
-    gradient: 'from-orange-500 to-orange-600',
-    description: 'Awaiting verification'
-  },
-  {
-    title: 'Approved KYBs',
-    value: '1,234',
-    change: '+15.2%',
-    changeType: 'positive',
-    icon: Building2,
-    gradient: 'from-green-500 to-green-600',
-    description: 'Business verifications'
-  },
-  {
-    title: 'Flagged Transactions',
-    value: '23',
-    change: '+2.1%',
-    changeType: 'negative',
-    icon: AlertTriangle,
-    gradient: 'from-red-500 to-red-600',
-    description: 'Require review'
-  },
-  {
-    title: 'Total Volume',
-    value: '$2.4M',
-    change: '+18.7%',
-    changeType: 'positive',
-    icon: DollarSign,
-    gradient: 'from-blue-500 to-blue-600',
-    description: 'Monthly transaction volume'
-  },
-];
-
-const alerts = [
-  {
-    id: 1,
-    title: 'High-risk transaction flagged',
-    client: 'Acme Corp Ltd',
-    status: 'flagged',
-    time: '10 minutes ago',
-    priority: 'high',
-    amount: '$45,000'
-  },
-  {
-    id: 2,
-    title: 'KYC document expired',
-    client: 'TechStart Inc',
-    status: 'pending',
-    time: '1 hour ago',
-    priority: 'medium',
-    type: 'KYC'
-  },
-  {
-    id: 3,
-    title: 'Multiple failed login attempts',
-    client: 'GlobalTrade LLC',
-    status: 'flagged',
-    time: '2 hours ago',
-    priority: 'high',
-    type: 'Security'
-  },
-  {
-    id: 4,
-    title: 'KYB verification completed',
-    client: 'Innovate Solutions',
-    status: 'resolved',
-    time: '3 hours ago',
-    priority: 'low',
-    type: 'KYB'
-  },
-];
-
-const recentActivity = [
-  { action: 'KYC Approved', client: 'Quantum Ventures', admin: 'Sarah M.', time: '5 min ago', icon: CheckCircle },
-  { action: 'Account Suspended', client: 'Delta Trading', admin: 'Mike R.', time: '12 min ago', icon: Shield },
-  { action: 'Transaction Flagged', client: 'Nexus Corp', admin: 'System', time: '18 min ago', icon: AlertTriangle },
-  { action: 'Document Uploaded', client: 'Prime Capital', admin: 'Lisa K.', time: '25 min ago', icon: Clock },
-];
+function formatCurrency(amount: number, currency: string = 'USD') {
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency, minimumFractionDigits: 2 }).format(amount);
+}
 
 export function DashboardView() {
+  // Live Wallex data
+  const { data: balances = [] } = useWallexBalances();
+  const { data: transactions = [] } = useWallexTransactions({ limit: 200 });
+  const { data: beneficiaries = [] } = useWallexBeneficiaries();
+
+  // KPIs derived from live data
+  const totalClients = beneficiaries.length;
+  const totalPayments = Array.isArray(transactions) ? transactions.length : 0;
+  const flaggedPayments = Array.isArray(transactions)
+    ? transactions.filter((t: any) => (t.status || '').toString().toLowerCase() === 'flagged').length
+    : 0;
+  const totalVolumeNum = Array.isArray(transactions)
+    ? transactions.reduce((sum: number, t: any) => sum + (Number(t.amount) || 0), 0)
+    : 0;
+  const primaryCurrency = balances[0]?.currency || 'USD';
+  const totalVolume = formatCurrency(totalVolumeNum, primaryCurrency);
+
+  const kpiCards = [
+    {
+      title: 'Total Clients',
+      value: String(totalClients),
+      change: '+0.0%',
+      changeType: 'positive' as const,
+      icon: Users,
+      gradient: 'from-primary to-chart-2',
+      description: 'Active beneficiary records'
+    },
+    {
+      title: 'Payments (last fetch)',
+      value: String(totalPayments),
+      change: '+0.0%',
+      changeType: 'positive' as const,
+      icon: ArrowLeftRight,
+      gradient: 'from-blue-500 to-blue-600',
+      description: 'Count of listed payments'
+    },
+    {
+      title: 'Flagged Payments',
+      value: String(flaggedPayments),
+      change: flaggedPayments > 0 ? '+0.0%' : '-0.0%',
+      changeType: flaggedPayments > 0 ? 'negative' : 'positive' as const,
+      icon: AlertTriangle,
+      gradient: 'from-red-500 to-red-600',
+      description: 'Require review'
+    },
+    {
+      title: 'Total Volume',
+      value: totalVolume,
+      change: '+0.0%',
+      changeType: 'positive' as const,
+      icon: DollarSign,
+      gradient: 'from-green-500 to-green-600',
+      description: 'Sum of listed payments'
+    },
+  ];
+
+  const alerts = [
+    {
+      id: 1,
+      title: 'High-risk transaction flagged',
+      client: '—',
+      status: 'flagged',
+      time: 'recent',
+      priority: 'high',
+      amount: flaggedPayments > 0 ? `${flaggedPayments} items` : undefined
+    },
+  ];
+
+  const recentActivity = [
+    { action: 'Balances fetched', client: 'Wallex', admin: 'System', time: 'now', icon: CheckCircle },
+    { action: 'Payments synced', client: 'Wallex', admin: 'System', time: 'now', icon: Clock },
+  ];
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-foreground mb-2">Dashboard Overview</h1>
-        <p className="text-muted-foreground">Welcome back! Here's your PayStreet compliance overview</p>
+        <p className="text-muted-foreground">Live KPIs sourced from Wallex</p>
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {kpiCards.map((kpi) => {
           const Icon = kpi.icon;
           const TrendIcon = kpi.changeType === 'positive' ? TrendingUp : TrendingDown;
@@ -140,7 +124,7 @@ export function DashboardView() {
                   <span className={`text-xs ${kpi.changeType === 'positive' ? 'text-green-600' : 'text-red-600'} group-hover:font-semibold transition-all duration-200`}>
                     {kpi.change}
                   </span>
-                  <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors duration-200">vs last month</span>
+                  <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors duration-200">vs last snapshot</span>
                 </div>
                 <p className="text-xs text-muted-foreground group-hover:text-foreground transition-colors duration-200">{kpi.description}</p>
               </CardContent>
@@ -156,7 +140,7 @@ export function DashboardView() {
             <div className="flex items-center justify-between">
               <CardTitle className="text-foreground">Compliance Alerts</CardTitle>
               <Badge variant="destructive" className="bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300">
-                {alerts.filter((a) => a.status === 'flagged').length} Flagged
+                {flaggedPayments} Flagged
               </Badge>
             </div>
           </CardHeader>
@@ -170,11 +154,7 @@ export function DashboardView() {
                   <div className="flex items-start gap-3">
                     <AlertTriangle
                       className={`w-5 h-5 mt-0.5 group-hover:scale-110 group-hover:rotate-6 transition-all duration-200 ${
-                        alert.status === 'flagged'
-                          ? 'text-red-500'
-                          : alert.status === 'pending'
-                          ? 'text-orange-500'
-                          : 'text-green-500'
+                        'text-red-500'
                       }`}
                     />
                     <div>
@@ -188,15 +168,9 @@ export function DashboardView() {
                   <div className="flex flex-col items-end gap-2">
                     <Badge
                       variant="secondary"
-                      className={`group-hover:scale-105 transition-transform duration-200 ${
-                        alert.status === 'flagged'
-                          ? 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300'
-                          : alert.status === 'pending'
-                          ? 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300'
-                          : 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
-                      }`}
+                      className={`group-hover:scale-105 transition-transform duration-200 bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300`}
                     >
-                      {alert.status}
+                      flagged
                     </Badge>
                     <span className="text-xs text-muted-foreground">{alert.time}</span>
                   </div>
@@ -223,10 +197,6 @@ export function DashboardView() {
             <Button variant="outline" className="w-full">
               <ArrowLeftRight className="w-4 h-4 mr-2" />
               View Transactions
-            </Button>
-            <Button variant="outline" className="w-full">
-              <Shield className="w-4 h-4 mr-2" />
-              Suspend Account
             </Button>
             <div className="pt-4 border-t border-border mt-4">
               <div className="text-sm text-muted-foreground mb-3">Recent Activity</div>
